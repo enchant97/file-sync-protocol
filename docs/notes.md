@@ -16,6 +16,14 @@
 - Limit bandwidth, using [PfSense](https://docs.netgate.com/pfsense/en/latest/trafficshaper/limiters.html)?
 - Amount of inactive traffic
 
+### Test Data
+Planned data, that will be used to test against.
+
+- Git repository objects or source code (~MBs, ~200 files)
+- Collection of photos 32MP (~1GB, ~100 files)
+- 4K Video (~5GB, 1 files)
+
+
 ## Tools For Scripts
 
 ### Toggle Interface
