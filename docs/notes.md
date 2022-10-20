@@ -1,4 +1,9 @@
 # Notes
+## Main Deadlines
+- Poster Presentation (06/01/2023)
+- Project (05/05/2023)
+
+
 ## Related Projects
 - FTP, SMB, etc
 - SyncThing
