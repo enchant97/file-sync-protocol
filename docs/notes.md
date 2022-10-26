@@ -3,6 +3,10 @@
 - Poster Presentation (06/01/2023)
 - Project (05/05/2023)
 
+## End Goal
+- Transfer files between client and server over a network
+- Be reliable, must be able to handle connection loss by recovering lost data
+- Minimal idle transfers, when nothing is happening minimal data is sent
 
 ## Related Projects
 - FTP, SMB, etc
