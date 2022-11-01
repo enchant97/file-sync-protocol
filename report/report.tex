@@ -1,0 +1,47 @@
+\documentclass[a4paper,12pt]{report}
+% document customization
+\usepackage[margin=1in]{geometry}
+% load custom font
+\usepackage{fontspec}
+\setmainfont{Carlito}
+% href links
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks,
+    allcolors=black
+}
+% create bibliography
+% run 'biber <tex name>' to convert .bib files
+\usepackage[style=authoryear-ibid,backend=biber]{biblatex}
+\addbibresource{refs.bib}
+\addbibresource{web-refs.bib}
+% section customization
+\usepackage{titlesec}
+\titleformat{\chapter}{\normalfont\huge}{\thechapter.}{20pt}{\huge\it}
+\titlespacing*{\chapter}{0pt}{-60pt}{20pt}
+% caption customization
+\usepackage[labelfont=bf, skip=5pt, font=small]{caption}
+% paragraph customization
+\renewcommand{\baselinestretch}{1.25}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
+
+\title{
+    {Title Here}\\
+}
+
+\author{Leo Spratt (ls959)}
+
+\begin{document}
+% \nocite{*} % add any unsighted references to bibliography
+\maketitle
+\tableofcontents
+\newpage
+
+% \chapter{}
+% \input{chapters/}
+
+% use \cite{} or \parencite{} cite a reference
+\printbibliography[heading=bibintoc]
+
+\end{document}
