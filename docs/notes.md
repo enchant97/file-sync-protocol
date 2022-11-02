@@ -6,10 +6,11 @@
 ## End Goal
 - Transfer files between client and server over a network
 - Be reliable, must be able to handle connection loss by recovering lost data
+  - Handle incomplete transfers without resending the whole file (send only what's missing)
 - Minimal idle transfers, when nothing is happening minimal data is sent
 
 ## Related Projects
-- FTP, SMB, etc
+- FTP, SMB, rsync, etc
 - SyncThing
 - Cloud Storage (Google Drive, OneDrive, etc)
 
