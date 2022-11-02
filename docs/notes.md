@@ -3,11 +3,13 @@
 - Poster Presentation (06/01/2023)
 - Project (05/05/2023)
 
-## End Goal
+
+## Goals
 - Transfer files between client and server over a network
 - Be reliable, must be able to handle connection loss by recovering lost data
   - Handle incomplete transfers without resending the whole file (send only what's missing)
 - Minimal idle transfers, when nothing is happening minimal data is sent
+
 
 ## Related Projects
 - FTP, SMB, rsync, etc
@@ -37,13 +39,13 @@ Planned data, that will be used to test against.
 ## Tools For Scripts
 
 ### Toggle Interface
-```
+```sh
 ip link set <interface> down/up
 ```
 - [Source](https://www.2daygeek.com/enable-disable-up-down-nic-network-interface-port-linux/)
 
 ### DHCP Get New IP
-```
+```sh
 # release ip
 dhclient -v -r <interface>
 
@@ -53,9 +55,57 @@ dhclient -v <interface>
 - [Source](https://www.cyberciti.biz/faq/howto-linux-renew-dhcp-client-ip-address/)
 
 ### Get Current DateTime
-```
+```sh
 date --rfc-3339 ns
 # output: 2022-10-18 15:11:27.463650129+01:00
 ```
 
 - [Source](https://man7.org/linux/man-pages/man1/date.1.html)
+
+### Emulate Network Stuff
+This can be done using tc & netem which is part of iproute2.
+
+> Does not seem to work on my arch system, although does on ubuntu?
+
+- add constant delay
+- add varying delay
+- add packet loss
+- duplicate packets
+- corrupt packets
+- reorder packets
+
+#### Sample Simulations
+```sh
+tc qdisc add dev <interface> root netem delay 250ms
+
+tc qdisc add dev <interface> root netem delay 100ms 10ms
+
+tc qdisc add dev <interface> root netem loss 1%
+
+tc qdisc add dev <interface> root netem corrupt 0.2%
+
+tc qdisc add dev <interface> root netem delay 10ms reorder 25% 50%
+
+# if modifying use:
+tc qdist change ...
+
+# many more that are found with:
+man netem
+```
+
+#### Remove All Simulations
+```sh
+tc qdisc del dev <interface> root netem
+```
+
+- [Source](https://srtlab.github.io/srt-cookbook/how-to-articles/using-netem-to-emulate-networks.html)
+
+### Generate Random Data
+```sh
+# "urandom" as it's faster than /dev/random (does not need to be secure)
+# "count" can adjust size in bytes
+
+dd if=/dev/urandom of=random-data.bin bs=1 count=1024
+```
+
+- [Source](https://stackoverflow.com/a/1462909/8075455)
