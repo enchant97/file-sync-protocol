@@ -1,0 +1,39 @@
+package main
+
+import (
+	"fmt"
+	"net"
+	"os"
+)
+
+func server(address string, filepathOut string) {
+	s, err := net.ResolveTCPAddr("tcp4", address)
+	if err != nil {
+		panic(err)
+	}
+
+	conn, err := net.ListenTCP("tcp4", s)
+	if err != nil {
+		panic(err)
+	}
+
+	f, _ := os.Create(filepathOut)
+	defer f.Close()
+
+	defer conn.Close()
+	buffer := make([]byte, 8192)
+
+	client, _ := conn.AcceptTCP()
+
+	for {
+		n, _ := client.Read(buffer)
+
+		if n == 0 {
+			fmt.Println("EOF")
+			return
+		}
+
+		f.Write(buffer[0:n])
+
+	}
+}
