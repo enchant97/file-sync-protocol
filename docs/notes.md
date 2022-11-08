@@ -37,6 +37,11 @@ Planned data, that will be used to test against.
 
 
 ## Tools For Scripts
+### SMB
+- <https://unix.stackexchange.com/a/536145>
+
+### Rsync
+- <https://www.man7.org/linux/man-pages/man1/rsync.1.html>
 
 ### Toggle Interface
 ```sh
