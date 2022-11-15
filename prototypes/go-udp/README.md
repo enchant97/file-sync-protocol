@@ -1,6 +1,9 @@
 # Go UDP
 Prototype Go UDP server & client to send a file over the network.
 
+- No error handling
+- No rate limiting (packets will be sent even if server cannot keep up)
+
 ## Usage
 ## Server
 ```

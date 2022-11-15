@@ -30,9 +30,5 @@ func client(address string, filepath string) {
 		if _, err := conn.Write(writeBuffer[0:writeN]); err != nil {
 			panic(err)
 		}
-
-		readBuffer := make([]byte, 8192)
-		conn.ReadFromUDP(readBuffer)
-		// just assume the 'ok' messages are received ok
 	}
 }
