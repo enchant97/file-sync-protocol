@@ -1,0 +1,41 @@
+version: "3.7"
+
+# each are isolated from internet & eachother
+networks:
+  rsyncd:
+    internal: true
+  samba:
+    internal: true
+  syncthing:
+    internal: true
+
+services:
+  rsyncd:
+    build: ./rsyncd
+    container_name: rsyncd
+    networks:
+      - rsyncd
+    # volumes:
+    #   - ./share:/share
+    tmpfs:
+      - /share
+
+  samba:
+    build: ./samba
+    container_name: samba
+    networks:
+      - samba
+    # volumes:
+    #   - ./share:/share
+    tmpfs:
+      - /share
+
+  syncthing:
+    image: syncthing/syncthing
+    container_name: syncthing
+    networks:
+      - syncthing
+    # volumes:
+    #   - ./share:/var/syncthing/Sync/
+    tmpfs:
+      - /var/syncthing/Sync/
