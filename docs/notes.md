@@ -37,6 +37,15 @@ Planned data, that will be used to test against.
 
 
 ## Tools For Scripts
+### RAM Disk
+```sh
+mkdir /mnt/tmp
+
+mount -t tmpfs -o size=4G tmp-disk /mnt/tmp
+
+umount /mnt/tmp && rm -f /mnt/tmp
+```
+
 ### SMB
 - <https://unix.stackexchange.com/a/536145>
 
