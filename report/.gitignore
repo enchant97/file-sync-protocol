@@ -6,6 +6,8 @@
 *.pdf
 *.run.xml
 *.toc
+*.lof
+*.lot
 
 # biber
 *.bbl
