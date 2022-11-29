@@ -10,6 +10,7 @@
     colorlinks,
     allcolors=black
 }
+\usepackage{bookmark}
 % create bibliography
 % run 'biber <tex name>' to convert .bib files
 \usepackage[style=authoryear-ibid,backend=biber]{biblatex}
@@ -37,7 +38,7 @@
 \maketitle
 
 \begin{abstract}
-Abstract goes here...
+    Abstract goes here...
 \end{abstract}
 \chapter{Acknowledgements}
 % \input{chapters/}
@@ -50,7 +51,16 @@ Abstract goes here...
 \chapter{Introduction}
 \chapter{Legal Considerations}
 \chapter{Ethical Considerations}
-%
+% START main chapters
+\chapter{Existing Solutions}
+\input{chapters/main/existing_solutions.tex}
+\chapter{Research}
+\input{chapters/main/research.tex}
+\chapter{Prototyping}
+\input{chapters/main/prototyping.tex}
+\chapter{Final Prototype}
+\input{chapters/main/prototype_final.tex}
+% END main chapters
 \chapter{Conclusion}
 
 % use \cite{} or \parencite{} cite a reference
