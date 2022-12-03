@@ -5,12 +5,7 @@ option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-1/
 
 message AckSynServer {
   uint32 client_id = 1;
-  uint32 payload_size = 2;
-}
-
-message ReqPushObjClient {
-  string path = 1;
-  uint64 size = 2;
+  uint32 mtu = 2;
 }
 
 message ReqChunkResend {
