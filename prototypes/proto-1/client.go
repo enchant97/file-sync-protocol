@@ -22,7 +22,13 @@ func makeMessageSection(rawSection []byte) []byte {
 	return append(rawSectionLen, rawSection...)
 }
 
-func makeMessage(maxLength int, messageType uint8, header protoreflect.ProtoMessage, meta protoreflect.ProtoMessage, payload io.Reader) []byte {
+func makeMessage(
+	maxLength int,
+	messageType uint8,
+	header protoreflect.ProtoMessage,
+	meta protoreflect.ProtoMessage,
+	payload io.Reader,
+) ([]byte, int) {
 	// make message type
 	rawMessageType := make([]byte, 1)
 	rawMessageType[0] = byte(messageType)
@@ -66,7 +72,7 @@ func makeMessage(maxLength int, messageType uint8, header protoreflect.ProtoMess
 	rawMessage = append(rawMessage, rawPayloadLength...)
 	rawMessage = append(rawMessage, rawPayload...)
 
-	return rawMessage
+	return rawMessage, payloadLength
 }
 
 func client(address string, mtu uint32) {
@@ -77,7 +83,7 @@ func client(address string, mtu uint32) {
 	}
 	defer conn.Close()
 
-	synMessage := makeMessage(
+	synMessage, _ := makeMessage(
 		int(mtu),
 		PacketTypeSYN,
 		&pbtypes.SynClient{
