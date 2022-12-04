@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
@@ -14,6 +15,7 @@ func client(address string, mtu uint32) {
 		panic(err)
 	}
 	defer conn.Close()
+	buffer := make([]byte, mtu)
 
 	synMessage, _ := core.MakeMessage(
 		int(mtu),
@@ -24,8 +26,10 @@ func client(address string, mtu uint32) {
 		nil,
 		nil,
 	)
+	conn.Write(synMessage)
 
-	if _, err := conn.Write(synMessage); err != nil {
-		panic(err)
-	}
+	n, _ := conn.Read(buffer)
+	fmt.Println(buffer)
+	message := core.GetMessage(buffer[0:n], false)
+	fmt.Println(message)
 }

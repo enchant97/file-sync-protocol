@@ -18,7 +18,7 @@ func makeMessageSection(rawSection []byte) []byte {
 // / Construct a message using given fields
 func MakeMessage(
 	maxLength int,
-	messageType uint8,
+	messageType PacketType,
 	header protoreflect.ProtoMessage,
 	meta protoreflect.ProtoMessage,
 	payload io.Reader,
@@ -46,13 +46,16 @@ func MakeMessage(
 
 	// read payload
 	payloadLength := 0
-	rawPayload := make([]byte, maxPayloadLength)
+	var rawPayload []byte
 	if payload != nil {
+		rawPayload = make([]byte, maxPayloadLength)
 		var payloadErr error
 		payloadLength, payloadErr = payload.Read(rawPayload)
 		if payloadErr != nil {
 			panic(payloadErr)
 		}
+		// cuts out any unused (payload shorter than reserved)
+		rawPayload = rawPayload[0:payloadLength]
 	}
 
 	// NOTE this will create a lot of memory allocations
@@ -64,7 +67,9 @@ func MakeMessage(
 	rawPayloadLength := make([]byte, 8)
 	binary.BigEndian.PutUint64(rawPayloadLength, uint64(payloadLength))
 	rawMessage = append(rawMessage, rawPayloadLength...)
-	rawMessage = append(rawMessage, rawPayload...)
+	if rawPayload != nil {
+		rawMessage = append(rawMessage, rawPayload...)
+	}
 
 	return rawMessage, payloadLength
 }

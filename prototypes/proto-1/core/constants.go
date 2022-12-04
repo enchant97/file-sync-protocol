@@ -1,9 +1,11 @@
 package core
 
+type PacketType uint8
+
 const (
-	PacketTypeSYN uint8 = 1
-	PacketTypeACK uint8 = 2
-	PacketTypeREQ uint8 = 3
-	PacketTypePSH uint8 = 4
-	PacketTypeFIN uint8 = 254
+	PacketTypeSYN PacketType = 1
+	PacketTypeACK PacketType = 2
+	PacketTypeREQ PacketType = 3
+	PacketTypePSH PacketType = 4
+	PacketTypeFIN PacketType = 254
 )
