@@ -8,11 +8,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-const (
-	PacketTypeSYN uint8 = 1
-	PacketTypeACK uint8 = 2
-)
-
 func makeMessageSection(rawSection []byte) []byte {
 	rawSectionLen := make([]byte, 8)
 	binary.BigEndian.PutUint64(rawSectionLen, uint64(len(rawSection)))
