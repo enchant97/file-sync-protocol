@@ -34,7 +34,7 @@ func server(address string, mtu uint32) {
 			int(mtu),
 			core.PacketTypeACK,
 			&pbtypes.AckServer{
-				ReqId: 0,
+				ReqId: 1,
 				Type:  pbtypes.AckTypes_SYN,
 			},
 			&pbtypes.AckSynServer{
