@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"io"
 	"net"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
@@ -14,16 +15,58 @@ const (
 	PacketTypeACK uint8 = 2
 )
 
-func makeMessage(messageType uint8, header protoreflect.ProtoMessage) []byte {
-	rawPacketDescriptor := make([]byte, 9)
-	rawPacketDescriptor[0] = byte(messageType)
+func makeMessageSection(rawSection []byte) []byte {
+	rawSectionLen := make([]byte, 8)
+	binary.BigEndian.PutUint64(rawSectionLen, uint64(len(rawSection)))
 
-	rawHeader, _ := proto.Marshal(header)
+	return append(rawSectionLen, rawSection...)
+}
 
-	headerLen := len(rawHeader)
-	binary.LittleEndian.PutUint64(rawPacketDescriptor[1:], uint64(headerLen))
+func makeMessage(maxLength int, messageType uint8, header protoreflect.ProtoMessage, meta protoreflect.ProtoMessage, payload io.Reader) []byte {
+	// make message type
+	rawMessageType := make([]byte, 1)
+	rawMessageType[0] = byte(messageType)
 
-	return append(rawPacketDescriptor, rawHeader...)
+	// make header
+	rawHeader, headerErr := proto.Marshal(header)
+	if headerErr != nil {
+		panic(headerErr)
+	}
+	rawHeaderSection := makeMessageSection(rawHeader)
+
+	rawMeta, metaErr := proto.Marshal(meta)
+	if metaErr != nil {
+		panic(metaErr)
+	}
+	rawMetaSection := makeMessageSection(rawMeta)
+
+	// calculate total length of message, +8 for payload length
+	messageLength := len(rawMessageType) + len(rawHeaderSection) + len(rawMetaSection) + 8
+	maxPayloadLength := maxLength - messageLength
+
+	// read payload
+	payloadLength := 0
+	rawPayload := make([]byte, maxPayloadLength)
+	if payload != nil {
+		var payloadErr error
+		payloadLength, payloadErr = payload.Read(rawPayload)
+		if payloadErr != nil {
+			panic(payloadErr)
+		}
+	}
+
+	// NOTE this will create a lot of memory allocations
+	rawMessage := make([]byte, 0)
+
+	rawMessage = append(rawMessage, rawMessageType...)
+	rawMessage = append(rawMessage, rawHeaderSection...)
+	rawMessage = append(rawMessage, rawMetaSection...)
+	rawPayloadLength := make([]byte, 8)
+	binary.BigEndian.PutUint64(rawPayloadLength, uint64(payloadLength))
+	rawMessage = append(rawMessage, rawPayloadLength...)
+	rawMessage = append(rawMessage, rawPayload...)
+
+	return rawMessage
 }
 
 func client(address string, mtu uint32) {
@@ -35,10 +78,13 @@ func client(address string, mtu uint32) {
 	defer conn.Close()
 
 	synMessage := makeMessage(
+		int(mtu),
 		PacketTypeSYN,
 		&pbtypes.SynClient{
 			Mtu: mtu,
 		},
+		nil,
+		nil,
 	)
 
 	if _, err := conn.Write(synMessage); err != nil {
