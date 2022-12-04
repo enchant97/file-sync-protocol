@@ -7,10 +7,10 @@
 |-----------------|----------|
 | Type            | uint8    |
 | Header Length   | uint64   |
-| Metadata Length | uint64   |
-| Payload Length  | uint64   |
 | Header          | protobuf |
+| Metadata Length | uint64   |
 | Metadata        | protobuf |
+| Payload Length  | uint64   |
 | Payload         | binary   |
 |-----------------|----------|
 ```
