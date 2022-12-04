@@ -4,14 +4,15 @@
 ### Packet
 
 ```
-|--------------|----------|
-| Type         | uint8    |
-| Header Size  | uint64   |
-| Header       | protobuf |
-| Metadata     | protobuf |
-| Payload Size | uint64   |
-| Payload      | binary   |
-|--------------|----------|
+|-----------------|----------|
+| Type            | uint8    |
+| Header Length   | uint64   |
+| Metadata Length | uint64   |
+| Payload Length  | uint64   |
+| Header          | protobuf |
+| Metadata        | protobuf |
+| Payload         | binary   |
+|-----------------|----------|
 ```
 
 ### Packet Types

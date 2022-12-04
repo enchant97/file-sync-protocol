@@ -9,7 +9,6 @@ message SynClient {
 
 message AckServer {
   uint64 req_id = 1;
-  uint64 metadata_size = 2;
 }
 
 message ReqClient {
@@ -18,7 +17,6 @@ message ReqClient {
     PUSH_OBJ = 0;
     RESEND_CHUNK = 1;
   }
-  uint64 metadata_size = 3;
 }
 
 message ReqServer {
@@ -26,7 +24,6 @@ message ReqServer {
   enum Type {
     RESEND_CHUNK = 0;
   }
-  uint64 metadata_size = 3;
 }
 
 message PshClient {
