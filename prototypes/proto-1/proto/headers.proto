@@ -3,6 +3,13 @@ package headers;
 
 option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes";
 
+enum ReqTypes {
+  PUSH_OBJ = 0;
+  NEXT_GROUP = 1;
+  NO_NEXT_GROUP = 2;
+  RESEND_CHUNK = 3;
+}
+
 message SynClient {
   uint32 mtu = 1;
 }
@@ -13,23 +20,16 @@ message AckServer {
 
 message ReqClient {
   uint64 id = 1;
-  enum Type {
-    PUSH_OBJ = 0;
-    RESEND_CHUNK = 1;
-  }
+  ReqTypes type = 2;
 }
 
 message ReqServer {
   uint64 req_id = 1;
-  enum Type {
-    RESEND_CHUNK = 0;
-  }
+  ReqTypes type = 2;
 }
 
 message PshClient {
   uint64 req_id = 1;
-  string path = 2;
-  uint64 size = 3;
 }
 
 message FinClient {

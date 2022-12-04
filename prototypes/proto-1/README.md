@@ -36,16 +36,22 @@ sequenceDiagram
     Note over Client,Server: Req Push
     Client ->>+ Server: REQ
     Server -->>- Client: ACK
-    Note over Client,Server: Send Groups
+    Note over Client,Server: Req Group
     loop Group Of Chunks
+        critical
+            alt No More
+                Client ->> Server: REQ
+            else Next Group
+                Client ->> Server: REQ
+            end
+        option Ready/OK
+            Server -->> Client: ACK
+        option Resend Chunk(s)
+            Server -->> Client: REQ
+        end
         Note over Client,Server: Send Chunks
         loop Chunks
             Client ->> Server: PSH
-        end
-        critical Proceed to Next Group
-            Server -->> Client: ACK
-        option Missing Chunk(s)
-            Server -->> Client: REQ
         end
     end
     Note over Client,Server: Close Connection
