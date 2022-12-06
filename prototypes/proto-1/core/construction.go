@@ -51,7 +51,7 @@ func MakeMessage(
 		rawPayload = make([]byte, maxPayloadLength)
 		var payloadErr error
 		payloadLength, payloadErr = payload.Read(rawPayload)
-		if payloadErr != nil {
+		if payloadErr != nil && payloadErr != io.EOF {
 			panic(payloadErr)
 		}
 		// cuts out any unused (payload shorter than reserved)
