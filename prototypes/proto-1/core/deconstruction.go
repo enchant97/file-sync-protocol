@@ -32,6 +32,10 @@ func getHeader(
 			message := pbtypes.SynClient{}
 			err = proto.Unmarshal(rawHeader, &message)
 			header = &message
+		case PacketTypeREQ:
+			message := pbtypes.ReqClient{}
+			err = proto.Unmarshal(rawHeader, &message)
+			header = &message
 		case PacketTypeFIN:
 			message := pbtypes.FinClient{}
 			err = proto.Unmarshal(rawHeader, &message)
@@ -64,7 +68,16 @@ func getMeta(
 
 	if isClient {
 		// message from client
-		switch true {
+		switch header := header.(type) {
+		case *pbtypes.ReqClient:
+			switch header.Type {
+			case pbtypes.ReqTypes_PUSH_OBJ:
+				message := pbtypes.ReqPshClient{}
+				err = proto.Unmarshal(rawMeta, &message)
+				meta = &message
+			default:
+				err = fmt.Errorf("invalid REQ client meta type")
+			}
 		default:
 			err = fmt.Errorf("client message does not support meta")
 		}

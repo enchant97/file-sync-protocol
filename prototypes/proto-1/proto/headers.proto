@@ -5,6 +5,7 @@ option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-1/
 
 enum AckTypes {
   SYN = 0;
+  ACK_PSH = 1;
 }
 
 enum ReqTypes {

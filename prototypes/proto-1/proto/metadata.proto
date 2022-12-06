@@ -9,12 +9,10 @@ message AckSynServer {
 }
 
 message ReqPshClient {
-  uint64 req_id = 1;
-  string path = 2;
-  uint64 size = 3;
+  string path = 1;
+  uint64 size = 2;
 }
 
 message ReqResendChunk {
-  uint64 req_id = 1;
-  repeated uint64 chunk_ids = 2;
+  repeated uint64 chunk_ids = 1;
 }

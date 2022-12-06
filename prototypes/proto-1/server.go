@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"net"
+	"path"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
@@ -23,12 +23,11 @@ func server(address string, mtu uint32) {
 
 	defer conn.Close()
 	buffer := make([]byte, mtu)
+	var receivedMessage core.Message
+	var receivedMessageAddr *net.UDPAddr
 
 	// accept SYN
-	n, addr, _ := conn.ReadFromUDP(buffer)
-	fmt.Println(buffer)
-	message := core.GetMessage(buffer[0:n], true)
-	fmt.Println(message)
+	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 
 	// send ACK
 	ackMessage, _ := core.MakeMessage(
@@ -44,5 +43,23 @@ func server(address string, mtu uint32) {
 		},
 		nil,
 	)
-	conn.WriteToUDP(ackMessage, addr)
+	conn.WriteToUDP(ackMessage, receivedMessageAddr)
+
+	// accept REQ for PSH
+	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+	pushFilePath := receivedMessage.Meta.(*pbtypes.ReqPshClient).Path
+	path.Join("./data", pushFilePath)
+
+	// send ACK
+	ackMessage, _ = core.MakeMessage(
+		int(mtu),
+		core.PacketTypeACK,
+		&pbtypes.AckServer{
+			ReqId: 2,
+			Type:  pbtypes.AckTypes_ACK_PSH,
+		},
+		nil,
+		nil,
+	)
+	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 }

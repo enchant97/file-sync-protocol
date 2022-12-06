@@ -14,7 +14,7 @@ func main() {
 		server(args[2], mtu)
 	}
 	if args[1] == "client" {
-		client(args[2], mtu)
+		client(args[2], mtu, args[3])
 	}
 	fmt.Println("done")
 }
