@@ -35,7 +35,7 @@ func server(address string, mtu uint32) {
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
 			ReqId: 1,
-			Type:  pbtypes.AckTypes_SYN,
+			Type:  pbtypes.AckTypes_ACK_SYN,
 		},
 		&pbtypes.AckSynServer{
 			ClientId: rand.Uint32(),
@@ -56,7 +56,7 @@ func server(address string, mtu uint32) {
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
 			ReqId: 2,
-			Type:  pbtypes.AckTypes_ACK_PSH,
+			Type:  pbtypes.AckTypes_ACK_REQ,
 		},
 		nil,
 		nil,

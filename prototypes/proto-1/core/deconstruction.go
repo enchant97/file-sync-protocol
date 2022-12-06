@@ -86,7 +86,7 @@ func getMeta(
 		switch header := header.(type) {
 		case *pbtypes.AckServer:
 			switch header.Type {
-			case pbtypes.AckTypes_SYN:
+			case pbtypes.AckTypes_ACK_SYN:
 				message := pbtypes.AckSynServer{}
 				err = proto.Unmarshal(rawMeta, &message)
 				meta = &message

@@ -11,14 +11,14 @@
 | Metadata Length | uint64   |
 | Metadata        | protobuf |
 | Payload Length  | uint64   |
-| Payload         | binary   |
-|-----------------|----------|
+| Payload | binary |
+| ------- | ------ |
 ```
 
 ### Packet Types
 
 | Prefix | Value | Note                              |
-| :----- | :-----| :-------------------------------- |
+| :----- | :---- | :-------------------------------- |
 | SYN    | 1     | Open connection                   |
 | ACK    | 2     | Acknowledge a request/action      |
 | REQ    | 3     | Request to send or receive PSH    |
@@ -36,22 +36,20 @@ sequenceDiagram
     Note over Client,Server: Req Push
     Client ->>+ Server: REQ
     Server -->>- Client: ACK
-    Note over Client,Server: Req Group
-    loop Group Of Chunks
-        critical
-            alt No More
-                Client ->> Server: REQ
-            else Next Group
+    Note over Client,Server: Send Chunks
+    loop Until ACK
+        loop Send Next Chunk
+            break No More Chunks
+                Note over Server: Expected Chunk ID's
                 Client ->> Server: REQ
             end
-        option Ready/OK
-            Server -->> Client: ACK
-        option Resend Chunk(s)
-            Server -->> Client: REQ
-        end
-        Note over Client,Server: Send Chunks
-        loop Chunks
             Client ->> Server: PSH
+        end
+        alt Received All
+            Server -->> Client: ACK
+        else Resend Chunk(s)
+            Note over Client: Missing Chunk ID's
+            Server -->> Client: REQ
         end
     end
     Note over Client,Server: Close Connection

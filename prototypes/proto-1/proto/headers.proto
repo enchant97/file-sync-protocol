@@ -4,15 +4,14 @@ package headers;
 option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes";
 
 enum AckTypes {
-  SYN = 0;
-  ACK_PSH = 1;
+  ACK_SYN = 0;
+  ACK_REQ = 1;
+  ACK_PSH = 2;
 }
 
 enum ReqTypes {
   PUSH_OBJ = 0;
-  NEXT_GROUP = 1;
-  NO_NEXT_GROUP = 2;
-  RESEND_CHUNK = 3;
+  RESEND_CHUNK = 1;
 }
 
 message SynClient {
