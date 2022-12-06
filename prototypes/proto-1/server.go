@@ -62,4 +62,16 @@ func server(address string, mtu uint32) {
 		nil,
 	)
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
+
+	// accept pushed chunks
+	for {
+		receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+
+		if receivedMessage.MessageType == core.PacketTypeREQ {
+			break
+		}
+	}
+
+	// send ACK
+	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 }

@@ -36,6 +36,10 @@ func getHeader(
 			message := pbtypes.ReqClient{}
 			err = proto.Unmarshal(rawHeader, &message)
 			header = &message
+		case PacketTypePSH:
+			message := pbtypes.PshClient{}
+			err = proto.Unmarshal(rawHeader, &message)
+			header = &message
 		case PacketTypeFIN:
 			message := pbtypes.FinClient{}
 			err = proto.Unmarshal(rawHeader, &message)
@@ -71,7 +75,7 @@ func getMeta(
 		switch header := header.(type) {
 		case *pbtypes.ReqClient:
 			switch header.Type {
-			case pbtypes.ReqTypes_PUSH_OBJ:
+			case pbtypes.ReqTypes_REQ_PUSH_OBJ:
 				message := pbtypes.ReqPshClient{}
 				err = proto.Unmarshal(rawMeta, &message)
 				meta = &message

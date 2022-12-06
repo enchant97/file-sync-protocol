@@ -10,8 +10,9 @@ enum AckTypes {
 }
 
 enum ReqTypes {
-  PUSH_OBJ = 0;
-  RESEND_CHUNK = 1;
+  REQ_PUSH_OBJ = 0;
+  REQ_PSH_VERIFY = 1;
+  REQ_RESEND_CHUNK = 2;
 }
 
 message SynClient {
@@ -36,6 +37,7 @@ message ReqServer {
 
 message PshClient {
   uint64 req_id = 1;
+  uint64 chunk_id = 2;
 }
 
 message FinClient {
