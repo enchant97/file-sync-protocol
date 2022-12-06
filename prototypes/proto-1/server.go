@@ -79,8 +79,11 @@ func server(address string, mtu uint32) {
 	for {
 		var n int
 		n, receivedMessageAddr, _ = conn.ReadFromUDP(buffer)
-		if buffer[0] == byte(core.PacketTypePSH) {
-			queuedPayloadChunks = append(queuedPayloadChunks, buffer[0:n])
+		if core.PacketType(buffer[0]) == core.PacketTypePSH {
+			// we don't want a reference
+			dstBytes := make([]byte, n)
+			copy(dstBytes, buffer[0:n])
+			queuedPayloadChunks = append(queuedPayloadChunks, dstBytes)
 		} else {
 			strippedBuffer := buffer[0:n]
 			fmt.Println(strippedBuffer)
@@ -96,7 +99,7 @@ func server(address string, mtu uint32) {
 	}
 
 	// write result to disk in "background"
-	writeFromChunked(pushFilePath, receivedMessages)
+	go writeFromChunked(pushFilePath, receivedMessages)
 
 	// send ACK
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
