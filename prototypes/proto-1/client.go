@@ -21,6 +21,7 @@ func client(address string, mtu uint32) {
 		int(mtu),
 		core.PacketTypeSYN,
 		&pbtypes.SynClient{
+			Id:  1,
 			Mtu: mtu,
 		},
 		nil,
@@ -32,4 +33,5 @@ func client(address string, mtu uint32) {
 	fmt.Println(buffer)
 	message := core.GetMessage(buffer[0:n], false)
 	fmt.Println(message)
+
 }

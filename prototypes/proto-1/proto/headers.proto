@@ -15,7 +15,8 @@ enum ReqTypes {
 }
 
 message SynClient {
-  uint32 mtu = 1;
+  uint64 id = 1;
+  uint32 mtu = 2;
 }
 
 message AckServer {

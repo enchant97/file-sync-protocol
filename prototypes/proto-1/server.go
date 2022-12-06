@@ -24,25 +24,25 @@ func server(address string, mtu uint32) {
 	defer conn.Close()
 	buffer := make([]byte, mtu)
 
+	// accept SYN
 	n, addr, _ := conn.ReadFromUDP(buffer)
 	fmt.Println(buffer)
 	message := core.GetMessage(buffer[0:n], true)
 	fmt.Println(message)
 
-	if message.MessageType == core.PacketTypeSYN {
-		ackMessage, _ := core.MakeMessage(
-			int(mtu),
-			core.PacketTypeACK,
-			&pbtypes.AckServer{
-				ReqId: 1,
-				Type:  pbtypes.AckTypes_SYN,
-			},
-			&pbtypes.AckSynServer{
-				ClientId: rand.Uint32(),
-				Mtu:      mtu,
-			},
-			nil,
-		)
-		conn.WriteToUDP(ackMessage, addr)
-	}
+	// send ACK
+	ackMessage, _ := core.MakeMessage(
+		int(mtu),
+		core.PacketTypeACK,
+		&pbtypes.AckServer{
+			ReqId: 1,
+			Type:  pbtypes.AckTypes_SYN,
+		},
+		&pbtypes.AckSynServer{
+			ClientId: rand.Uint32(),
+			Mtu:      mtu,
+		},
+		nil,
+	)
+	conn.WriteToUDP(ackMessage, addr)
 }
