@@ -7,8 +7,9 @@ import (
 
 func ReceiveMessage(buffer []byte, conn *net.UDPConn, fromClient bool) (Message, *net.UDPAddr) {
 	n, addr, _ := conn.ReadFromUDP(buffer)
-	fmt.Println(buffer)
-	message := GetMessage(buffer[0:n], fromClient)
+	strippedBuffer := buffer[0:n]
+	fmt.Println(strippedBuffer)
+	message := GetMessage(strippedBuffer, fromClient)
 	fmt.Println(message)
 	return message, addr
 }

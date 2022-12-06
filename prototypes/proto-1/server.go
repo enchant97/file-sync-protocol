@@ -1,13 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"net"
+	"os"
 	"path"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
 )
+
+func writeFromChunked(filename string, messageChunks []core.Message) {
+	file, _ := os.Create(filename)
+	defer file.Close()
+
+	for _, chunk := range messageChunks {
+		file.Write(chunk.Payload)
+	}
+}
 
 func server(address string, mtu uint32) {
 	s, err := net.ResolveUDPAddr("udp4", address)
@@ -48,7 +59,7 @@ func server(address string, mtu uint32) {
 	// accept REQ for PSH
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 	pushFilePath := receivedMessage.Meta.(*pbtypes.ReqPshClient).Path
-	path.Join("./data", pushFilePath)
+	pushFilePath = path.Join("./data", pushFilePath)
 
 	// send ACK
 	ackMessage, _ = core.MakeMessage(
@@ -64,14 +75,30 @@ func server(address string, mtu uint32) {
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
 	// accept pushed chunks
+	queuedPayloadChunks := make([][]byte, 0)
 	for {
-		receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
-
-		if receivedMessage.MessageType == core.PacketTypeREQ {
+		var n int
+		n, receivedMessageAddr, _ = conn.ReadFromUDP(buffer)
+		if buffer[0] == byte(core.PacketTypePSH) {
+			queuedPayloadChunks = append(queuedPayloadChunks, buffer[0:n])
+		} else {
+			strippedBuffer := buffer[0:n]
+			fmt.Println(strippedBuffer)
+			receivedMessage = core.GetMessage(strippedBuffer, true)
+			fmt.Println(receivedMessage)
 			break
 		}
 	}
 
+	receivedMessages := make([]core.Message, len(queuedPayloadChunks))
+	for i := 0; i < len(queuedPayloadChunks); i++ {
+		receivedMessages[i] = core.GetMessage(queuedPayloadChunks[i], true)
+	}
+
+	// write result to disk in "background"
+	writeFromChunked(pushFilePath, receivedMessages)
+
 	// send ACK
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
+
 }

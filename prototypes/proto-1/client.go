@@ -4,7 +4,6 @@ import (
 	"net"
 	"os"
 	"path"
-	"time"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
@@ -83,8 +82,6 @@ func client(address string, mtu uint32, filePath string) {
 		}
 		conn.Write(payloadMessageToSend)
 		currentChunkID += 1
-		// HACK as server can't keep up
-		time.Sleep(2000)
 	}
 
 	// send REQ verify
