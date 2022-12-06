@@ -98,10 +98,9 @@ func server(address string, mtu uint32) {
 		receivedMessages[i] = core.GetMessage(queuedPayloadChunks[i], true)
 	}
 
-	// write result to disk in "background"
-	go writeFromChunked(pushFilePath, receivedMessages)
-
 	// send ACK
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
+	// write result to disk
+	writeFromChunked(pushFilePath, receivedMessages)
 }
