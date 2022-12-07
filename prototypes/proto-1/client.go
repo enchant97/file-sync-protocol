@@ -64,6 +64,8 @@ func client(address string, mtu uint32, filePath string) {
 	defer fileReader.Close()
 
 	var lastChunkID uint64 = 0
+	var seekOffset int = 0
+	var chunkIDToOffset = make(map[uint64]int)
 	for {
 		// send next chunk
 		payloadMessageToSend, payloadLength := core.MakeMessage(
@@ -81,24 +83,50 @@ func client(address string, mtu uint32, filePath string) {
 			break
 		}
 		lastChunkID += 1
+		chunkIDToOffset[lastChunkID] = seekOffset
+		seekOffset += payloadLength
 		conn.Write(payloadMessageToSend)
 	}
 
-	// send REQ verify
-	messageToSend, _ = core.MakeMessage(
-		int(mtu),
-		core.PacketTypeREQ,
-		&pbtypes.ReqClient{
-			Id:   2,
-			Type: pbtypes.ReqTypes_REQ_PSH_VERIFY,
-		},
-		&pbtypes.ReqPshVerifyClient{
-			LastChunkId: lastChunkID,
-		},
-		nil,
-	)
-	conn.Write(messageToSend)
+	for {
+		// send REQ verify
+		messageToSend, _ = core.MakeMessage(
+			int(mtu),
+			core.PacketTypeREQ,
+			&pbtypes.ReqClient{
+				Id:   2,
+				Type: pbtypes.ReqTypes_REQ_PSH_VERIFY,
+			},
+			&pbtypes.ReqPshVerifyClient{
+				LastChunkId: lastChunkID,
+			},
+			nil,
+		)
+		conn.Write(messageToSend)
 
-	// receive ACK
-	core.ReceiveMessage(buffer, conn, false)
+		// receive ACK
+		receivedMessage, _ := core.ReceiveMessage(buffer, conn, false)
+		if receivedMessage.MessageType == core.PacketTypeACK {
+			break
+		}
+
+		// receive REQ for resend
+		missingChunks := receivedMessage.Meta.(*pbtypes.ReqResendChunk).ChunkIds
+
+		// send the requested missing chunks
+		for _, chunkID := range missingChunks {
+			fileReader.Seek(int64(chunkIDToOffset[chunkID]), 0)
+			payloadMessageToSend, _ := core.MakeMessage(
+				int(mtu),
+				core.PacketTypePSH,
+				&pbtypes.PshClient{
+					ReqId:   2,
+					ChunkId: chunkID,
+				},
+				nil,
+				fileReader,
+			)
+			conn.Write(payloadMessageToSend)
+		}
+	}
 }

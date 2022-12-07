@@ -111,16 +111,41 @@ func server(address string, mtu uint32) {
 
 	lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
 
-	missingChunkIDs := make([]uint64, 0)
+	for {
+		missingChunkIDs := make([]uint64, 0)
 
-	for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
-		chunkNum := uint64(chunkNum)
-		if _, exists := receivedChunks[chunkNum]; !exists {
-			missingChunkIDs = append(missingChunkIDs, chunkNum)
+		for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
+			chunkNum := uint64(chunkNum)
+			if _, exists := receivedChunks[chunkNum]; !exists {
+				missingChunkIDs = append(missingChunkIDs, chunkNum)
+			}
+		}
+
+		if len(missingChunkIDs) == 0 {
+			break
+		}
+
+		fmt.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
+
+		resendMessage, _ := core.MakeMessage(
+			int(mtu),
+			core.PacketTypeREQ,
+			&pbtypes.ReqServer{
+				ReqId: 2,
+				Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
+			},
+			&pbtypes.ReqResendChunk{
+				ChunkIds: missingChunkIDs,
+			},
+			nil,
+		)
+		conn.WriteToUDP(resendMessage, receivedMessageAddr)
+
+		_, newChunks, _ := receivePSH(buffer, conn)
+		for chunkID, chunk := range newChunks {
+			receivedChunks[chunkID] = chunk
 		}
 	}
-
-	fmt.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
 
 	// send ACK
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)

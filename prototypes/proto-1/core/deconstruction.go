@@ -50,6 +50,10 @@ func getHeader(
 	} else {
 		// message from server
 		switch messageType {
+		case PacketTypeREQ:
+			message := pbtypes.ReqServer{}
+			err = proto.Unmarshal(rawHeader, &message)
+			header = &message
 		case PacketTypeACK:
 			message := pbtypes.AckServer{}
 			err = proto.Unmarshal(rawHeader, &message)
@@ -100,6 +104,15 @@ func getMeta(
 				meta = &message
 			default:
 				err = fmt.Errorf("invalid ACK server meta type")
+			}
+		case *pbtypes.ReqServer:
+			switch header.Type {
+			case pbtypes.ReqTypes_REQ_RESEND_CHUNK:
+				message := pbtypes.ReqResendChunk{}
+				err = proto.Unmarshal(rawMeta, &message)
+				meta = &message
+			default:
+				err = fmt.Errorf("invalid REQ server meta type")
 			}
 		default:
 			err = fmt.Errorf("server message does not support meta")
