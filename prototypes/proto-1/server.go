@@ -11,13 +11,44 @@ import (
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
 )
 
-func writeFromChunked(filename string, messageChunks []core.Message) {
+func writeFromChunked(filename string, chunks map[uint64]core.Message) {
 	file, _ := os.Create(filename)
 	defer file.Close()
 
-	for _, chunk := range messageChunks {
-		file.Write(chunk.Payload)
+	for chunkNum := 1; chunkNum <= len(chunks); chunkNum++ {
+		file.Write(chunks[uint64(chunkNum)].Payload)
 	}
+}
+
+func receivePSH(buffer []byte, conn *net.UDPConn) (core.Message, map[uint64]core.Message, *net.UDPAddr) {
+	var clientAddress *net.UDPAddr
+	var doneMessage core.Message
+	queuedPayloadChunks := make([][]byte, 0)
+	for {
+		var n int
+		n, clientAddress, _ = conn.ReadFromUDP(buffer)
+		if core.PacketType(buffer[0]) == core.PacketTypePSH {
+			// we don't want a reference
+			dstBytes := make([]byte, n)
+			copy(dstBytes, buffer[0:n])
+			queuedPayloadChunks = append(queuedPayloadChunks, dstBytes)
+		} else {
+			strippedBuffer := buffer[0:n]
+			fmt.Println(strippedBuffer)
+			doneMessage = core.GetMessage(strippedBuffer, true)
+			fmt.Println(doneMessage)
+			break
+		}
+	}
+
+	// process chunks
+	receivedChunks := make(map[uint64]core.Message)
+	for _, rawChunk := range queuedPayloadChunks {
+		chunk := core.GetMessage(rawChunk, true)
+		chunkID := chunk.Header.(*pbtypes.PshClient).ChunkId
+		receivedChunks[chunkID] = chunk
+	}
+	return doneMessage, receivedChunks, clientAddress
 }
 
 func server(address string, mtu uint32) {
@@ -75,32 +106,25 @@ func server(address string, mtu uint32) {
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
 	// accept pushed chunks
-	queuedPayloadChunks := make([][]byte, 0)
-	for {
-		var n int
-		n, receivedMessageAddr, _ = conn.ReadFromUDP(buffer)
-		if core.PacketType(buffer[0]) == core.PacketTypePSH {
-			// we don't want a reference
-			dstBytes := make([]byte, n)
-			copy(dstBytes, buffer[0:n])
-			queuedPayloadChunks = append(queuedPayloadChunks, dstBytes)
-		} else {
-			strippedBuffer := buffer[0:n]
-			fmt.Println(strippedBuffer)
-			receivedMessage = core.GetMessage(strippedBuffer, true)
-			fmt.Println(receivedMessage)
-			break
+	var receivedChunks map[uint64]core.Message
+	receivedMessage, receivedChunks, receivedMessageAddr = receivePSH(buffer, conn)
+
+	lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
+
+	missingChunkIDs := make([]uint64, 0)
+
+	for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
+		chunkNum := uint64(chunkNum)
+		if _, exists := receivedChunks[chunkNum]; !exists {
+			missingChunkIDs = append(missingChunkIDs, chunkNum)
 		}
 	}
 
-	receivedMessages := make([]core.Message, len(queuedPayloadChunks))
-	for i := 0; i < len(queuedPayloadChunks); i++ {
-		receivedMessages[i] = core.GetMessage(queuedPayloadChunks[i], true)
-	}
+	fmt.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
 
 	// send ACK
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
 	// write result to disk
-	writeFromChunked(pushFilePath, receivedMessages)
+	writeFromChunked(pushFilePath, receivedChunks)
 }

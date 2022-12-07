@@ -13,6 +13,10 @@ message ReqPshClient {
   uint64 size = 2;
 }
 
+message ReqPshVerifyClient {
+  uint64 last_chunk_id = 1;
+}
+
 message ReqResendChunk {
   repeated uint64 chunk_ids = 1;
 }

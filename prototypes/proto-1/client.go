@@ -63,7 +63,7 @@ func client(address string, mtu uint32, filePath string) {
 	}
 	defer fileReader.Close()
 
-	currentChunkID := 0
+	var lastChunkID uint64 = 0
 	for {
 		// send next chunk
 		payloadMessageToSend, payloadLength := core.MakeMessage(
@@ -71,7 +71,7 @@ func client(address string, mtu uint32, filePath string) {
 			core.PacketTypePSH,
 			&pbtypes.PshClient{
 				ReqId:   2,
-				ChunkId: uint64(currentChunkID),
+				ChunkId: uint64(lastChunkID),
 			},
 			nil,
 			fileReader,
@@ -80,8 +80,8 @@ func client(address string, mtu uint32, filePath string) {
 			// EOF
 			break
 		}
+		lastChunkID += 1
 		conn.Write(payloadMessageToSend)
-		currentChunkID += 1
 	}
 
 	// send REQ verify
@@ -92,7 +92,9 @@ func client(address string, mtu uint32, filePath string) {
 			Id:   2,
 			Type: pbtypes.ReqTypes_REQ_PSH_VERIFY,
 		},
-		nil,
+		&pbtypes.ReqPshVerifyClient{
+			LastChunkId: lastChunkID,
+		},
 		nil,
 	)
 	conn.Write(messageToSend)

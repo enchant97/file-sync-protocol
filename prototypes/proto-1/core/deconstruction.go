@@ -79,6 +79,10 @@ func getMeta(
 				message := pbtypes.ReqPshClient{}
 				err = proto.Unmarshal(rawMeta, &message)
 				meta = &message
+			case pbtypes.ReqTypes_REQ_PSH_VERIFY:
+				message := pbtypes.ReqPshVerifyClient{}
+				err = proto.Unmarshal(rawMeta, &message)
+				meta = &message
 			default:
 				err = fmt.Errorf("invalid REQ client meta type")
 			}
