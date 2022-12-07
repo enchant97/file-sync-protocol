@@ -71,7 +71,7 @@ func client(address string, mtu uint32, filePath string) {
 			core.PacketTypePSH,
 			&pbtypes.PshClient{
 				ReqId:   2,
-				ChunkId: uint64(lastChunkID),
+				ChunkId: uint64(lastChunkID) + 1,
 			},
 			nil,
 			fileReader,
