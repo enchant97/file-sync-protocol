@@ -70,6 +70,9 @@ func server(address string, mtu uint32) {
 
 	// accept SYN
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+	// set send mtu to match requested client's
+	sendMTU := int(receivedMessage.Header.(*pbtypes.SynClient).Mtu)
+	log.Printf("send MTU = '%d'\n", sendMTU)
 
 	// send ACK
 	ackMessage, _ := core.MakeMessage(
@@ -94,7 +97,7 @@ func server(address string, mtu uint32) {
 
 	// send ACK
 	ackMessage, _ = core.MakeMessage(
-		int(mtu),
+		sendMTU,
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
 			ReqId: 2,
@@ -128,7 +131,7 @@ func server(address string, mtu uint32) {
 		log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
 
 		resendMessage, _ := core.MakeMessage(
-			int(mtu),
+			sendMTU,
 			core.PacketTypeREQ,
 			&pbtypes.ReqServer{
 				ReqId: 2,
@@ -158,7 +161,7 @@ func server(address string, mtu uint32) {
 
 	// send ACK
 	ackMessage, _ = core.MakeMessage(
-		int(mtu),
+		sendMTU,
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
 			ReqId: 0,

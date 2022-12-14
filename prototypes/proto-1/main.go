@@ -19,7 +19,7 @@ func main() {
 		mtu = uint32(value)
 	}
 
-	log.Println("MTU set as =", mtu)
+	log.Printf("receive MTU = '%d'\n", mtu)
 
 	if args[1] == "server" {
 		log.Println("starting server...")

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net"
 	"os"
 	"path"
@@ -8,6 +9,10 @@ import (
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/pbtypes"
 )
+
+// The 'safe' mtu payload size
+// https://stackoverflow.com/a/1099359
+const SYN_MTU_SIZE = 512
 
 func client(address string, mtu uint32, filePath string) {
 	s, _ := net.ResolveUDPAddr("udp4", address)
@@ -18,11 +23,11 @@ func client(address string, mtu uint32, filePath string) {
 	defer conn.Close()
 	buffer := make([]byte, mtu)
 
-	// var receivedMessage core.Message
+	var receivedMessage core.Message
 
 	// send SYN
 	messageToSend, _ := core.MakeMessage(
-		int(mtu),
+		SYN_MTU_SIZE,
 		core.PacketTypeSYN,
 		&pbtypes.SynClient{
 			Id:  1,
@@ -34,12 +39,15 @@ func client(address string, mtu uint32, filePath string) {
 	conn.Write(messageToSend)
 
 	// receive ACK
-	core.ReceiveMessage(buffer, conn, false)
+	receivedMessage, _ = core.ReceiveMessage(buffer, conn, false)
+	// set send mtu to match requested server's
+	sendMTU := int(receivedMessage.Meta.(*pbtypes.AckSynServer).Mtu)
+	log.Printf("send MTU = '%d'\n", sendMTU)
 
 	// send Req for PSH
 	fileInfo, _ := os.Stat(filePath)
 	messageToSend, _ = core.MakeMessage(
-		int(mtu),
+		sendMTU,
 		core.PacketTypeREQ,
 		&pbtypes.ReqClient{
 			Id:   2,
@@ -69,7 +77,7 @@ func client(address string, mtu uint32, filePath string) {
 	for {
 		// send next chunk
 		payloadMessageToSend, payloadLength := core.MakeMessage(
-			int(mtu),
+			sendMTU,
 			core.PacketTypePSH,
 			&pbtypes.PshClient{
 				ReqId:   2,
@@ -91,7 +99,7 @@ func client(address string, mtu uint32, filePath string) {
 	for {
 		// send REQ verify
 		messageToSend, _ = core.MakeMessage(
-			int(mtu),
+			sendMTU,
 			core.PacketTypeREQ,
 			&pbtypes.ReqClient{
 				Id:   2,
@@ -105,7 +113,7 @@ func client(address string, mtu uint32, filePath string) {
 		conn.Write(messageToSend)
 
 		// receive ACK
-		receivedMessage, _ := core.ReceiveMessage(buffer, conn, false)
+		receivedMessage, _ = core.ReceiveMessage(buffer, conn, false)
 		if receivedMessage.MessageType == core.PacketTypeACK {
 			break
 		}
@@ -117,7 +125,7 @@ func client(address string, mtu uint32, filePath string) {
 		for _, chunkID := range missingChunks {
 			fileReader.Seek(int64(chunkIDToOffset[chunkID]), 0)
 			payloadMessageToSend, _ := core.MakeMessage(
-				int(mtu),
+				sendMTU,
 				core.PacketTypePSH,
 				&pbtypes.PshClient{
 					ReqId:   2,
@@ -132,7 +140,7 @@ func client(address string, mtu uint32, filePath string) {
 
 	// send FIN
 	messageToSend, _ = core.MakeMessage(
-		int(mtu),
+		sendMTU,
 		core.PacketTypeFIN,
 		nil,
 		nil,
