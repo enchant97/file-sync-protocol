@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -34,9 +34,9 @@ func receivePSH(buffer []byte, conn *net.UDPConn) (core.Message, map[uint64]core
 			queuedPayloadChunks = append(queuedPayloadChunks, dstBytes)
 		} else {
 			strippedBuffer := buffer[0:n]
-			fmt.Println(strippedBuffer)
+			log.Println(strippedBuffer)
 			doneMessage = core.GetMessage(strippedBuffer, true)
-			fmt.Println(doneMessage)
+			log.Println(doneMessage)
 			break
 		}
 	}
@@ -125,7 +125,7 @@ func server(address string, mtu uint32) {
 			break
 		}
 
-		fmt.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
+		log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
 
 		resendMessage, _ := core.MakeMessage(
 			int(mtu),
