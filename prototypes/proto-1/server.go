@@ -152,4 +152,20 @@ func server(address string, mtu uint32) {
 
 	// write result to disk
 	writeFromChunked(pushFilePath, receivedChunks)
+
+	// receive FIN
+	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+
+	// send ACK
+	ackMessage, _ = core.MakeMessage(
+		int(mtu),
+		core.PacketTypeACK,
+		&pbtypes.AckServer{
+			ReqId: 0,
+			Type:  pbtypes.AckTypes_ACK_FIN,
+		},
+		nil,
+		nil,
+	)
+	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 }

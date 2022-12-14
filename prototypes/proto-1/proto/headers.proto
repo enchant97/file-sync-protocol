@@ -7,6 +7,7 @@ enum AckTypes {
   ACK_SYN = 0;
   ACK_REQ = 1;
   ACK_PSH = 2;
+  ACK_FIN = 3;
 }
 
 enum ReqTypes {

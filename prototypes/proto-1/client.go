@@ -129,4 +129,17 @@ func client(address string, mtu uint32, filePath string) {
 			conn.Write(payloadMessageToSend)
 		}
 	}
+
+	// send FIN
+	messageToSend, _ = core.MakeMessage(
+		int(mtu),
+		core.PacketTypeFIN,
+		nil,
+		nil,
+		nil,
+	)
+	conn.Write(messageToSend)
+
+	// receive ACK
+	core.ReceiveMessage(buffer, conn, false)
 }
