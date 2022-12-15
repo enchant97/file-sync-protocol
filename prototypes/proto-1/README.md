@@ -11,8 +11,8 @@
 | Metadata Length | uint64   |
 | Metadata        | protobuf |
 | Payload Length  | uint64   |
-| Payload | binary |
-| ------- | ------ |
+| Payload         | binary   |
+|-----------------|----------|
 ```
 
 ### Packet Types
