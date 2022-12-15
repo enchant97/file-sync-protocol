@@ -23,6 +23,26 @@
 |-----------------|----------|
 ```
 
+### Example - SYN
+
+```
+|-------------------|
+| 1                 | <- Packet Type
+| 5                 | <- Header Length
+| {id: 1, mtu: 470} | <- Protobuf Header
+| 0                 | <- No Metadata
+| 0                 | <- No Payload
+|-------------------|
+```
+
+```
+ 1 0 0 0 0 0 0 0 5 8 1 16 214 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ ^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
+ |        |             |              |               |
+Type    Header        Header        Metadata        Payload
+        Length                       Length         Length
+```
+
 ### Packet Types
 
 | Prefix | Value | Note                              |
