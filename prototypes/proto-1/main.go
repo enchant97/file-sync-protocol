@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/enchant97/file-sync-protocol/prototypes/proto-1/core"
 )
 
 func main() {
@@ -18,6 +20,8 @@ func main() {
 		}
 		mtu = uint32(value)
 	}
+
+	mtu -= core.Ipv4ReservedBytes
 
 	log.Printf("receive MTU = '%d'\n", mtu)
 

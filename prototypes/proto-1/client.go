@@ -12,7 +12,7 @@ import (
 
 // The 'safe' mtu payload size
 // https://stackoverflow.com/a/1099359
-const SYN_MTU_SIZE = 512
+const SYN_MTU_SIZE = 512 - core.Ipv4ReservedBytes
 
 func client(address string, mtu uint32, filePath string) {
 	s, _ := net.ResolveUDPAddr("udp4", address)
