@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/binary"
 	"io"
+	"log"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -15,6 +16,20 @@ func makeMessageSection(rawSection []byte) []byte {
 	return append(rawSectionLen, rawSection...)
 }
 
+func PredictMessageSize(header protoreflect.ProtoMessage, meta protoreflect.ProtoMessage) int {
+	size := 1
+	if header != nil {
+		size += 8
+		size += proto.Size(header)
+	}
+	if meta != nil {
+		size += 8
+		size += proto.Size(meta)
+	}
+	size += 8
+	return size
+}
+
 // / Construct a message using given fields
 func MakeMessage(
 	maxLength int,
@@ -23,6 +38,9 @@ func MakeMessage(
 	meta protoreflect.ProtoMessage,
 	payload io.Reader,
 ) ([]byte, int) {
+	predictedSize := PredictMessageSize(header, meta)
+	log.Printf("message size (without payload) = %d bytes\n", predictedSize)
+
 	// make message type
 	rawMessageType := make([]byte, 1)
 	rawMessageType[0] = byte(messageType)
