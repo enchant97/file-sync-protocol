@@ -18,12 +18,12 @@ func makeMessageSection(rawSection []byte) []byte {
 
 func PredictMessageSize(header protoreflect.ProtoMessage, meta protoreflect.ProtoMessage) int {
 	size := 1
+	size += 8
 	if header != nil {
-		size += 8
 		size += proto.Size(header)
 	}
+	size += 8
 	if meta != nil {
-		size += 8
 		size += proto.Size(meta)
 	}
 	size += 8
