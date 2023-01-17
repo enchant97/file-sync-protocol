@@ -26,7 +26,7 @@ func client(address string, mtu uint32, filePath string) {
 	var receivedMessage core.Message
 
 	// send SYN
-	messageToSend, _ := core.MakeMessage(
+	messageToSend, _, _ := core.MakeMessage(
 		SYN_MTU_SIZE,
 		core.PacketTypeSYN,
 		&pbtypes.SynClient{
@@ -46,7 +46,7 @@ func client(address string, mtu uint32, filePath string) {
 
 	// send Req for PSH
 	fileInfo, _ := os.Stat(filePath)
-	messageToSend, _ = core.MakeMessage(
+	messageToSend, _, _ = core.MakeMessage(
 		sendMTU,
 		core.PacketTypeREQ,
 		&pbtypes.ReqClient{
@@ -76,7 +76,7 @@ func client(address string, mtu uint32, filePath string) {
 	var chunkIDToOffset = make(map[uint64]int)
 	for {
 		// send next chunk
-		payloadMessageToSend, payloadLength := core.MakeMessage(
+		payloadMessageToSend, payloadLength, _ := core.MakeMessage(
 			sendMTU,
 			core.PacketTypePSH,
 			&pbtypes.PshClient{
@@ -98,7 +98,7 @@ func client(address string, mtu uint32, filePath string) {
 
 	for {
 		// send REQ verify
-		messageToSend, _ = core.MakeMessage(
+		messageToSend, _, _ = core.MakeMessage(
 			sendMTU,
 			core.PacketTypeREQ,
 			&pbtypes.ReqClient{
@@ -124,7 +124,7 @@ func client(address string, mtu uint32, filePath string) {
 		// send the requested missing chunks
 		for _, chunkID := range missingChunks {
 			fileReader.Seek(int64(chunkIDToOffset[chunkID]), 0)
-			payloadMessageToSend, _ := core.MakeMessage(
+			payloadMessageToSend, _, _ := core.MakeMessage(
 				sendMTU,
 				core.PacketTypePSH,
 				&pbtypes.PshClient{
@@ -139,7 +139,7 @@ func client(address string, mtu uint32, filePath string) {
 	}
 
 	// send FIN
-	messageToSend, _ = core.MakeMessage(
+	messageToSend, _, _ = core.MakeMessage(
 		sendMTU,
 		core.PacketTypeFIN,
 		nil,

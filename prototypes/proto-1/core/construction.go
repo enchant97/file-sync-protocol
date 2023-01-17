@@ -2,8 +2,8 @@ package core
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
-	"log"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -30,16 +30,25 @@ func PredictMessageSize(header protoreflect.ProtoMessage, meta protoreflect.Prot
 	return size
 }
 
-// / Construct a message using given fields
+// Construct a message using given fields,
+// ensuring that the given message will fit
 func MakeMessage(
 	maxLength int,
 	messageType PacketType,
 	header protoreflect.ProtoMessage,
 	meta protoreflect.ProtoMessage,
 	payload io.Reader,
-) ([]byte, int) {
+) ([]byte, int, error) {
+
+	// check if message will fit in given max size
 	predictedSize := PredictMessageSize(header, meta)
-	log.Printf("message size (without payload) = %d bytes\n", predictedSize)
+	if predictedSize > maxLength {
+		return nil, 0, fmt.Errorf(
+			"message will not fit given max length (need %d, have %d)",
+			predictedSize, maxLength)
+	} else if predictedSize == maxLength && payload != nil {
+		return nil, 0, fmt.Errorf("message leaves no space for given payload")
+	}
 
 	// make message type
 	rawMessageType := make([]byte, 1)
@@ -89,5 +98,5 @@ func MakeMessage(
 		rawMessage = append(rawMessage, rawPayload...)
 	}
 
-	return rawMessage, payloadLength
+	return rawMessage, payloadLength, nil
 }

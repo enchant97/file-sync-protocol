@@ -75,7 +75,7 @@ func server(address string, mtu uint32) {
 	log.Printf("send MTU = '%d'\n", sendMTU)
 
 	// send ACK
-	ackMessage, _ := core.MakeMessage(
+	ackMessage, _, _ := core.MakeMessage(
 		int(mtu),
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
@@ -96,7 +96,7 @@ func server(address string, mtu uint32) {
 	pushFilePath = path.Join("./data", pushFilePath)
 
 	// send ACK
-	ackMessage, _ = core.MakeMessage(
+	ackMessage, _, _ = core.MakeMessage(
 		sendMTU,
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
@@ -117,6 +117,7 @@ func server(address string, mtu uint32) {
 	for {
 		missingChunkIDs := make([]uint64, 0)
 
+		// check for missing chunks
 		for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
 			chunkNum := uint64(chunkNum)
 			if _, exists := receivedChunks[chunkNum]; !exists {
@@ -124,24 +125,37 @@ func server(address string, mtu uint32) {
 			}
 		}
 
+		// not missing any chunks, so break
 		if len(missingChunkIDs) == 0 {
 			break
 		}
 
 		log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
 
-		resendMessage, _ := core.MakeMessage(
-			sendMTU,
-			core.PacketTypeREQ,
-			&pbtypes.ReqServer{
-				ReqId: 2,
-				Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
-			},
-			&pbtypes.ReqResendChunk{
-				ChunkIds: missingChunkIDs,
-			},
-			nil,
-		)
+		// HACK really inefficient way of handling when message is too large
+
+		var resendMessage []byte
+		var chunksLenToRequest = len(missingChunkIDs)
+		for {
+			resendMessage, _, err = core.MakeMessage(
+				sendMTU,
+				core.PacketTypeREQ,
+				&pbtypes.ReqServer{
+					ReqId: 2,
+					Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
+				},
+				&pbtypes.ReqResendChunk{
+					ChunkIds: missingChunkIDs[:chunksLenToRequest],
+				},
+				nil,
+			)
+			if err == nil {
+				break
+			}
+			// too many chunk id's to fit in packet, reduce by one
+			chunksLenToRequest--
+			log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
+		}
 		conn.WriteToUDP(resendMessage, receivedMessageAddr)
 
 		_, newChunks, _ := receivePSH(buffer, conn)
@@ -160,7 +174,7 @@ func server(address string, mtu uint32) {
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 
 	// send ACK
-	ackMessage, _ = core.MakeMessage(
+	ackMessage, _, _ = core.MakeMessage(
 		sendMTU,
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
