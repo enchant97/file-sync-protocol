@@ -1,7 +1,20 @@
 # Prototype 1
 
+## Usage
+### Server
+
+```
+go run . server 127.0.0.1:9000
+```
+
+### Client
+
+```
+go run . client 127.0.0.1:9000 file-to-send.txt
+```
+
 ## Discovered Issues
-- If a large amount of packets are dropped during a PSH the REQ for resend packet will not be able to contain all chunk id's
+- If a large amount of packets are dropped during a PSH the REQ for resend packet will not be able to contain all chunk id's in one go
   - Send chunks in groups, say 5 chunks at a time then ACK; then another 5?
 - Header must be decoded before metadata can be interpreted.
   - Fix by combining header+metadata by combining types e.g. SYN-ACK and having optional fields in protobuf spec?
