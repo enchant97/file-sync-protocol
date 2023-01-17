@@ -145,7 +145,7 @@ func GetMessage(rawMessage []byte, isClient bool) Message {
 
 	// find payload length
 	offsetIndex += int(metaLength)
-	payloadLength := binary.BigEndian.Uint64(rawMessage[offsetIndex : offsetIndex+9])
+	payloadLength := binary.BigEndian.Uint64(rawMessage[offsetIndex : offsetIndex+8])
 
 	// process payload
 	offsetIndex += 8
