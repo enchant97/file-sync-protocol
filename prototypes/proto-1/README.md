@@ -1,6 +1,16 @@
 # Prototype 1
+This prototype I will test my first design of the protocol. It will only include the features listed below:
+
+- Very basic error correction
+- Dummy Handshake
+- Send one real file from client to server
+  - Handle resend of missing file packets
+- Customisable MTU size for testing
+- Dummy connection close
 
 ## Usage
+Adjustable MTU size through the `NET_MTU` environment variable.
+
 ### Server
 
 ```
