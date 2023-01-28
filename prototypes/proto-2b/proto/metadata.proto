@@ -14,8 +14,6 @@ message ReqPshClient {
 }
 
 message ReqPshVerifyClient {
-  // first chunk in range of current block
-  uint64 first_chunk_id = 1;
   // last chunk in range of current block
   uint64 last_chunk_id = 2;
 }

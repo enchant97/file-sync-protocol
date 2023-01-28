@@ -73,30 +73,56 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 
 	var lastChunkID uint64 = 0
 	var seekOffset int = 0
-	var chunkIDToOffset = make(map[uint64]int)
-	for {
-		// send next chunk
-		payloadMessageToSend, payloadLength, _ := core.MakeMessage(
-			sendMTU,
-			core.PacketTypePSH,
-			&pbtypes.PshClient{
-				ReqId:   2,
-				ChunkId: uint64(lastChunkID) + 1,
-			},
-			nil,
-			fileReader,
-		)
-		if payloadLength == 0 {
-			// EOF
-			break
-		}
-		lastChunkID += 1
-		chunkIDToOffset[lastChunkID] = seekOffset
-		seekOffset += payloadLength
-		conn.Write(payloadMessageToSend)
-	}
 
-	for {
+	var chunkIDToOffset = make(map[uint64]int)
+
+	eof := false
+	var missingChunks = []uint64{}
+
+	for len(missingChunks) == 0 && !eof {
+		if len(missingChunks) != 0 {
+			// PSH missing
+			for _, chunkID := range missingChunks {
+				fileReader.Seek(int64(chunkIDToOffset[chunkID]), 0)
+				payloadMessageToSend, _, _ := core.MakeMessage(
+					sendMTU,
+					core.PacketTypePSH,
+					&pbtypes.PshClient{
+						ReqId:   2,
+						ChunkId: chunkID,
+					},
+					nil,
+					fileReader,
+				)
+				conn.Write(payloadMessageToSend)
+				missingChunks = nil
+			}
+		} else {
+			// PSH next block
+			chunksSent := uint(0)
+			for chunksSent < chunks_per_block && !eof {
+				payloadMessageToSend, payloadLength, _ := core.MakeMessage(
+					sendMTU,
+					core.PacketTypePSH,
+					&pbtypes.PshClient{
+						ReqId:   2,
+						ChunkId: uint64(lastChunkID) + 1,
+					},
+					nil,
+					fileReader,
+				)
+				if payloadLength == 0 {
+					eof = true
+				} else {
+					lastChunkID += 1
+					chunkIDToOffset[lastChunkID] = seekOffset
+					seekOffset += payloadLength
+					conn.Write(payloadMessageToSend)
+					chunksSent++
+				}
+			}
+			log.Printf("PSH '%d' chunks", chunksSent)
+		}
 		// send REQ verify
 		messageToSend, _, _ = core.MakeMessage(
 			sendMTU,
@@ -112,31 +138,29 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 		)
 		conn.Write(messageToSend)
 
-		// receive ACK
+		// receive ACK or REQ for resend
 		receivedMessage, _ = core.ReceiveMessage(buffer, conn, false)
-		if receivedMessage.MessageType == core.PacketTypeACK {
-			break
-		}
-
-		// receive REQ for resend
-		missingChunks := receivedMessage.Meta.(*pbtypes.ReqResendChunk).ChunkIds
-
-		// send the requested missing chunks
-		for _, chunkID := range missingChunks {
-			fileReader.Seek(int64(chunkIDToOffset[chunkID]), 0)
-			payloadMessageToSend, _, _ := core.MakeMessage(
-				sendMTU,
-				core.PacketTypePSH,
-				&pbtypes.PshClient{
-					ReqId:   2,
-					ChunkId: chunkID,
-				},
-				nil,
-				fileReader,
-			)
-			conn.Write(payloadMessageToSend)
+		if receivedMessage.MessageType != core.PacketTypeACK {
+			missingChunks = append(missingChunks, receivedMessage.Meta.(*pbtypes.ReqResendChunk).ChunkIds...)
+			log.Printf("REQ for '%d' missing chunks", len(missingChunks))
 		}
 	}
+
+	// send EOF
+	messageToSend, _, _ = core.MakeMessage(
+		sendMTU,
+		core.PacketTypeREQ,
+		&pbtypes.ReqClient{
+			Id:   2,
+			Type: pbtypes.ReqTypes_REQ_PUSH_EOF,
+		},
+		nil,
+		nil,
+	)
+	conn.Write(messageToSend)
+
+	// receive ACK
+	core.ReceiveMessage(buffer, conn, false)
 
 	// send FIN
 	messageToSend, _, _ = core.MakeMessage(
