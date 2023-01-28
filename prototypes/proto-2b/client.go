@@ -79,7 +79,10 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 	eof := false
 	var missingChunks = []uint64{}
 
-	for len(missingChunks) == 0 && !eof {
+	for {
+		if len(missingChunks) == 0 && eof {
+			break
+		}
 		if len(missingChunks) != 0 {
 			// PSH missing
 			for _, chunkID := range missingChunks {
@@ -95,8 +98,9 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 					fileReader,
 				)
 				conn.Write(payloadMessageToSend)
-				missingChunks = nil
 			}
+			log.Printf("PSH requested '%d' missing chunks", len(missingChunks))
+			missingChunks = nil
 		} else {
 			// PSH next block
 			chunksSent := uint(0)

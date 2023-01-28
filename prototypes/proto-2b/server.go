@@ -123,7 +123,7 @@ func server(address string, mtu uint32) {
 			// HACK really inefficient way of handling when message is too large
 
 			var resendMessage []byte
-			var chunksLenToRequest = len(missingChunkIDs)
+			chunksLenToRequest := len(missingChunkIDs)
 			for {
 				resendMessage, _, err = core.MakeMessage(
 					sendMTU,
