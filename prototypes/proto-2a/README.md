@@ -1,30 +1,12 @@
-# Prototype 2
-This prototype I will alter the first prototype to improve handling of when lots of packets go missing during a file transfer. It will only include the features listed below:
-
-- Very basic error correction
-- Dummy Handshake
-- Send one real file from client to server
-  - Handle resend of missing file packets
-  - Grouped packets
-- Customisable MTU size for testing
-- Dummy connection close
-
+# Prototype 2A
 
 ## Usage
-Same as proto-1
-
+No prototype, as superseded by 2B.
 
 ## Discovered Issues
-TBD.
+- Adding validated groups with id's would add a lot of unneeded complexity (solved in 2B)
 
-
-## Structure
-Same as proto-1
-
-
-## Client File Push
-
-```mermaid
+```
 sequenceDiagram
     Note over Client,Server: Init Connection
     Client->>+Server: SYN
@@ -68,5 +50,4 @@ sequenceDiagram
     Note over Client,Server: Close Connection
     Client->>+ Server: FIN
     Server -->>- Client: ACK
-
 ```
