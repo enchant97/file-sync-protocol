@@ -1,0 +1,25 @@
+syntax = "proto3";
+package metadata;
+
+option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-2b/pbtypes";
+
+message AckSynServer {
+  uint32 client_id = 1;
+  uint32 mtu = 2;
+}
+
+message ReqPshClient {
+  string path = 1;
+  uint64 size = 2;
+}
+
+message ReqPshVerifyClient {
+  // first chunk in range of current block
+  uint64 first_chunk_id = 1;
+  // last chunk in range of current block
+  uint64 last_chunk_id = 2;
+}
+
+message ReqResendChunk {
+  repeated uint64 chunk_ids = 2;
+}

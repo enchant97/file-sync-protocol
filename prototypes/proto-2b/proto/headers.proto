@@ -1,0 +1,47 @@
+syntax = "proto3";
+package headers;
+
+option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-2b/pbtypes";
+
+enum AckTypes {
+  ACK_SYN = 0;
+  ACK_REQ = 1;
+  ACK_PSH = 2;
+  ACK_FIN = 3;
+}
+
+enum ReqTypes {
+  REQ_PUSH_OBJ = 0;
+  REQ_PUSH_VERIFY = 1;
+  REQ_RESEND_CHUNK = 2;
+  REQ_PSH_EOF = 3;
+}
+
+message SynClient {
+  uint64 id = 1;
+  uint32 mtu = 2;
+}
+
+message AckServer {
+  uint64 req_id = 1;
+  AckTypes type = 2;
+}
+
+message ReqClient {
+  uint64 id = 1;
+  ReqTypes type = 2;
+}
+
+message ReqServer {
+  uint64 req_id = 1;
+  ReqTypes type = 2;
+}
+
+message PshClient {
+  uint64 req_id = 1;
+  uint64 chunk_id = 2;
+}
+
+message FinClient {
+  uint64 id = 1;
+}
