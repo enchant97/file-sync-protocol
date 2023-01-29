@@ -112,79 +112,74 @@ func server(address string, mtu uint32) {
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
 	receivedChunks := make(map[uint64]core.Message)
-	lastChunkID := 0
-	missingChunkIDs := []uint64{}
-	inProgress := false
+	eof := false
 
-	// accept pushed chunks
-	for {
-		if len(missingChunkIDs) != 0 {
-			// REQ missing chunks
+	// handle PSH until EOF
+	for !eof {
+		// Receive PSH or REQ
+		var newChunks map[uint64]core.Message
+		receivedMessage, newChunks, receivedMessageAddr = receivePSH(buffer, conn)
 
-			log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
-
-			// HACK really inefficient way of handling when message is too large
-
-			var resendMessage []byte
-			chunksLenToRequest := len(missingChunkIDs)
-			for {
-				resendMessage, _, err = core.MakeMessage(
-					sendMTU,
-					core.PacketTypeREQ,
-					&pbtypes.ReqServer{
-						ReqId: 2,
-						Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
-					},
-					&pbtypes.ReqResendChunk{
-						ChunkIds: missingChunkIDs[:chunksLenToRequest],
-					},
-					nil,
-				)
-				if err == nil {
-					break
-				}
-				// too many chunk id's to fit in packet, reduce by one
-				chunksLenToRequest--
-				log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
-			}
-			conn.WriteToUDP(resendMessage, receivedMessageAddr)
-
-			_, newChunks, _ := receivePSH(buffer, conn)
-			for chunkID, chunk := range newChunks {
-				receivedChunks[chunkID] = chunk
-			}
-			missingChunkIDs = nil
-		} else {
-			if inProgress {
-				conn.WriteToUDP(ackMessage, receivedMessageAddr)
-			}
-			// Receive PSH or REQ
-			var newChunks map[uint64]core.Message
-			receivedMessage, newChunks, receivedMessageAddr = receivePSH(buffer, conn)
-			for chunkID, chunk := range newChunks {
-				receivedChunks[chunkID] = chunk
-			}
-
-			if (receivedMessage.Header.(*pbtypes.ReqClient)).Type == pbtypes.ReqTypes_REQ_PUSH_EOF {
-				log.Println("received EOF")
-				// send ACK EOF
-				conn.WriteToUDP(ackMessage, receivedMessageAddr)
-				break
-			}
-			lastChunkID = int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
-			inProgress = true
+		// add received chunks (if there are any)
+		for chunkID, chunk := range newChunks {
+			receivedChunks[chunkID] = chunk
 		}
-		// check for missing chunks
-		for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
-			chunkNum := uint64(chunkNum)
-			if _, exists := receivedChunks[chunkNum]; !exists {
-				missingChunkIDs = append(missingChunkIDs, chunkNum)
+
+		messageType := receivedMessage.Header.(*pbtypes.ReqClient).Type
+		if messageType == pbtypes.ReqTypes_REQ_PUSH_EOF {
+			// write result to disk
+			writeFromChunked(pushFilePath, receivedChunks)
+			// register EOF
+			eof = true
+			conn.WriteToUDP(ackMessage, receivedMessageAddr)
+		} else if messageType == pbtypes.ReqTypes_REQ_PUSH_VERIFY {
+			// chunk range to validate
+			lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
+
+			// check for missing chunks
+			missingChunkIDs := []uint64{}
+			for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
+				chunkNum := uint64(chunkNum)
+				if _, exists := receivedChunks[chunkNum]; !exists {
+					missingChunkIDs = append(missingChunkIDs, chunkNum)
+				}
+			}
+
+			if len(missingChunkIDs) != 0 {
+				// missing chunks were found
+				log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
+
+				// HACK really inefficient way of handling when message is too large
+
+				var resendMessage []byte
+				chunksLenToRequest := len(missingChunkIDs)
+				for {
+					resendMessage, _, err = core.MakeMessage(
+						sendMTU,
+						core.PacketTypeREQ,
+						&pbtypes.ReqServer{
+							ReqId: 2,
+							Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
+						},
+						&pbtypes.ReqResendChunk{
+							ChunkIds: missingChunkIDs[:chunksLenToRequest],
+						},
+						nil,
+					)
+					if err == nil {
+						break
+					}
+					// too many chunk id's to fit in packet, reduce by one
+					chunksLenToRequest--
+					log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
+				}
+				conn.WriteToUDP(resendMessage, receivedMessageAddr)
+			} else {
+				// no missing chunks were found
+				conn.WriteToUDP(ackMessage, receivedMessageAddr)
 			}
 		}
 	}
-
-	// write result to disk
-	writeFromChunked(pushFilePath, receivedChunks)
 
 	// receive FIN
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
