@@ -137,7 +137,7 @@ func server(address string, mtu uint32) {
 			lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
 
 			// check for missing chunks
-			missingChunkIDs := []uint64{}
+			missingChunkIDs := make([]uint64, 0)
 			for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
 				chunkNum := uint64(chunkNum)
 				if _, exists := receivedChunks[chunkNum]; !exists {

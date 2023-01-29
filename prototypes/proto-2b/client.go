@@ -75,10 +75,10 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 	var lastChunkID uint64 = 0
 	var seekOffset int = 0
 
-	var chunkIDToOffset = make(map[uint64]int)
+	chunkIDToOffset := make(map[uint64]int)
 
 	eof := false
-	var missingChunks = []uint64{}
+	missingChunks := make([]uint64, 0)
 
 	for {
 		if len(missingChunks) == 0 && eof {
@@ -128,7 +128,6 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 					chunksSent++
 				}
 			}
-			log.Printf("PSH '%d' chunks", chunksSent)
 		}
 
 		// HACK server cannot keep up
