@@ -17,8 +17,10 @@ Same as proto-1
 
 
 ## Discovered Issues
-TBD.
+- Server cannot predict number of chunks in a block, due to being determined by client. If server could predict chunks per block; a buffer could be pre allocated reducing memory allocations
 
+## Fixed Issues
+- (cae32ef) file reader cursor position not set back after a requested resend, causing incorrect data to be sent on next PSH. Fixed by seeking to stored seek offset before reading
 
 ## Structure
 Same as proto-1
