@@ -12,6 +12,9 @@ import (
 )
 
 func writeFromChunked(filename string, chunks map[uint64]core.Message) {
+	// ensure we always have new file
+	os.Remove(filename)
+
 	file, _ := os.Create(filename)
 	defer file.Close()
 
@@ -155,7 +158,7 @@ func server(address string, mtu uint32) {
 			if inProgress {
 				conn.WriteToUDP(ackMessage, receivedMessageAddr)
 			}
-			// Receive PSH
+			// Receive PSH or REQ
 			var newChunks map[uint64]core.Message
 			receivedMessage, newChunks, receivedMessageAddr = receivePSH(buffer, conn)
 			for chunkID, chunk := range newChunks {

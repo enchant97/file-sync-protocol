@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"time"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-2b/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-2b/pbtypes"
@@ -127,6 +128,10 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 			}
 			log.Printf("PSH '%d' chunks", chunksSent)
 		}
+
+		// HACK server cannot keep up
+		time.Sleep(time.Millisecond * 2)
+
 		// send REQ verify
 		messageToSend, _, _ = core.MakeMessage(
 			sendMTU,
