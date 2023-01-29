@@ -104,6 +104,8 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 			missingChunks = nil
 		} else {
 			// PSH next block
+			// NOTE this ensures file position is reset to last position if a resend was issued
+			fileReader.Seek(int64(seekOffset), 0)
 			chunksSent := uint(0)
 			for chunksSent < chunks_per_block && !eof {
 				payloadMessageToSend, payloadLength, _ := core.MakeMessage(
