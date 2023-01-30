@@ -6,7 +6,7 @@ No prototype, as superseded by 2B.
 ## Discovered Issues
 - Adding validated groups with id's would add a lot of unneeded complexity (solved in 2B)
 
-```
+```mermaid
 sequenceDiagram
     Note over Client,Server: Init Connection
     Client->>+Server: SYN
