@@ -45,9 +45,38 @@ TBD
   - SYN (reply to REQ-SYN, send capabilities)
   - ACK (acknowledge a REQ)
   - ERR
-    - PSH-DAT (chunk id's to re-send, sent in reply to a PSH-VAL)
+    - DAT (chunk id's to re-send, sent in reply to a PSH-VAL)
 
 ## Client File Push
 
 ```mermaid
+sequenceDiagram
+    Note over Client,Server: Init Connection
+    Client->>+Server: SYN
+    Server-->>-Client: SYN
+    Note over Client,Server: Req Push
+    Client ->>+ Server: PSH
+    Server -->>- Client: ACK
+    Note over Client,Server: Send Blocks
+    loop Until EOF
+        loop Until ACK
+            loop Send Chunks
+                Client ->> Server: PSH-DAT
+            end
+            Note over Server: Verify Current Block
+            Client ->> Server: PSH-VAL
+            break All Ok
+                Server -->> Client: ACK
+            end
+            Note over Client: Missing Chunk ID's
+            Server -->> Client: ERR-DAT
+        end
+        break EOF
+            Client ->> Server: PSH-EOF
+            Server -->> Client: ACK
+        end
+    end
+    Note over Client,Server: Close Connection
+    Client->>+ Server: FIN
+    Server -->>- Client: ACK
 ```
