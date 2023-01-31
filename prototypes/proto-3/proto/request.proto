@@ -1,0 +1,40 @@
+syntax = "proto3";
+package request;
+
+option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-3/pbtypes";
+
+// Init a new connection, send capabilities
+message Syn {
+    uint32 max_mtu = 1;
+}
+
+// Leave
+message Fin {
+    uint64 id = 1;
+}
+
+// A request to push a file
+message Psh {
+    uint64 id = 1;
+    string path = 2;
+    uint64 size = 3;
+}
+
+// A chunk
+message PshDat {
+    uint64 request_id = 1;
+    uint64 block_id = 2;
+    uint64 chunk_id = 3;
+}
+
+// Request to validate a block
+message PshVal {
+    uint64 request_id = 1;
+    uint64 block_id = 2;
+    uint64 last_chunk_id = 3;
+}
+
+// Mark file as finished
+message PshEof {
+    uint64 request_id = 1;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package response;
+
+option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-3/pbtypes";
+
+// Accept a new connection, send capabilities
+message Syn {
+    uint32 max_mtu = 1;
+    uint32 client_id = 2;
+}
+
+// "Happy" path in response to a request
+message Ack {
+    uint64 request_id = 1;
+}
+
+// "Sad" path in response to a PSH-VAL request
+message ErrDat {
+    uint64 request_id = 1;
+    repeated uint64 chunk_ids = 4;
+}
