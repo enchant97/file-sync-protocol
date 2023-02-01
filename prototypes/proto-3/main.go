@@ -11,7 +11,7 @@ import (
 func main() {
 	args := os.Args
 
-	mtu := uint32(512)
+	mtu := uint32(1500)
 
 	if value, isSet := os.LookupEnv("NET_MTU"); isSet {
 		value, err := strconv.ParseUint(value, 10, 32)
