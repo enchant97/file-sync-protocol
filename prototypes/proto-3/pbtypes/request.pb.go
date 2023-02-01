@@ -21,7 +21,7 @@ const (
 )
 
 // Init a new connection, send capabilities
-type Syn struct {
+type ReqSyn struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -29,8 +29,8 @@ type Syn struct {
 	MaxMtu uint32 `protobuf:"varint,1,opt,name=max_mtu,json=maxMtu,proto3" json:"max_mtu,omitempty"`
 }
 
-func (x *Syn) Reset() {
-	*x = Syn{}
+func (x *ReqSyn) Reset() {
+	*x = ReqSyn{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -38,13 +38,13 @@ func (x *Syn) Reset() {
 	}
 }
 
-func (x *Syn) String() string {
+func (x *ReqSyn) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Syn) ProtoMessage() {}
+func (*ReqSyn) ProtoMessage() {}
 
-func (x *Syn) ProtoReflect() protoreflect.Message {
+func (x *ReqSyn) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -56,12 +56,12 @@ func (x *Syn) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Syn.ProtoReflect.Descriptor instead.
-func (*Syn) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqSyn.ProtoReflect.Descriptor instead.
+func (*ReqSyn) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Syn) GetMaxMtu() uint32 {
+func (x *ReqSyn) GetMaxMtu() uint32 {
 	if x != nil {
 		return x.MaxMtu
 	}
@@ -69,7 +69,7 @@ func (x *Syn) GetMaxMtu() uint32 {
 }
 
 // Leave
-type Fin struct {
+type ReqFin struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -77,8 +77,8 @@ type Fin struct {
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
-func (x *Fin) Reset() {
-	*x = Fin{}
+func (x *ReqFin) Reset() {
+	*x = ReqFin{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -86,13 +86,13 @@ func (x *Fin) Reset() {
 	}
 }
 
-func (x *Fin) String() string {
+func (x *ReqFin) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Fin) ProtoMessage() {}
+func (*ReqFin) ProtoMessage() {}
 
-func (x *Fin) ProtoReflect() protoreflect.Message {
+func (x *ReqFin) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -104,12 +104,12 @@ func (x *Fin) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Fin.ProtoReflect.Descriptor instead.
-func (*Fin) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqFin.ProtoReflect.Descriptor instead.
+func (*ReqFin) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Fin) GetId() uint64 {
+func (x *ReqFin) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
@@ -117,7 +117,7 @@ func (x *Fin) GetId() uint64 {
 }
 
 // A request to push a file
-type Psh struct {
+type ReqPsh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -127,8 +127,8 @@ type Psh struct {
 	Size uint64 `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
 }
 
-func (x *Psh) Reset() {
-	*x = Psh{}
+func (x *ReqPsh) Reset() {
+	*x = ReqPsh{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -136,13 +136,13 @@ func (x *Psh) Reset() {
 	}
 }
 
-func (x *Psh) String() string {
+func (x *ReqPsh) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Psh) ProtoMessage() {}
+func (*ReqPsh) ProtoMessage() {}
 
-func (x *Psh) ProtoReflect() protoreflect.Message {
+func (x *ReqPsh) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -154,26 +154,26 @@ func (x *Psh) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Psh.ProtoReflect.Descriptor instead.
-func (*Psh) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqPsh.ProtoReflect.Descriptor instead.
+func (*ReqPsh) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Psh) GetId() uint64 {
+func (x *ReqPsh) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *Psh) GetPath() string {
+func (x *ReqPsh) GetPath() string {
 	if x != nil {
 		return x.Path
 	}
 	return ""
 }
 
-func (x *Psh) GetSize() uint64 {
+func (x *ReqPsh) GetSize() uint64 {
 	if x != nil {
 		return x.Size
 	}
@@ -181,7 +181,7 @@ func (x *Psh) GetSize() uint64 {
 }
 
 // A chunk
-type PshDat struct {
+type ReqPshDat struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -191,8 +191,8 @@ type PshDat struct {
 	ChunkId   uint64 `protobuf:"varint,3,opt,name=chunk_id,json=chunkId,proto3" json:"chunk_id,omitempty"`
 }
 
-func (x *PshDat) Reset() {
-	*x = PshDat{}
+func (x *ReqPshDat) Reset() {
+	*x = ReqPshDat{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -200,13 +200,13 @@ func (x *PshDat) Reset() {
 	}
 }
 
-func (x *PshDat) String() string {
+func (x *ReqPshDat) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PshDat) ProtoMessage() {}
+func (*ReqPshDat) ProtoMessage() {}
 
-func (x *PshDat) ProtoReflect() protoreflect.Message {
+func (x *ReqPshDat) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -218,26 +218,26 @@ func (x *PshDat) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PshDat.ProtoReflect.Descriptor instead.
-func (*PshDat) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqPshDat.ProtoReflect.Descriptor instead.
+func (*ReqPshDat) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *PshDat) GetRequestId() uint64 {
+func (x *ReqPshDat) GetRequestId() uint64 {
 	if x != nil {
 		return x.RequestId
 	}
 	return 0
 }
 
-func (x *PshDat) GetBlockId() uint64 {
+func (x *ReqPshDat) GetBlockId() uint64 {
 	if x != nil {
 		return x.BlockId
 	}
 	return 0
 }
 
-func (x *PshDat) GetChunkId() uint64 {
+func (x *ReqPshDat) GetChunkId() uint64 {
 	if x != nil {
 		return x.ChunkId
 	}
@@ -245,7 +245,7 @@ func (x *PshDat) GetChunkId() uint64 {
 }
 
 // Request to validate a block
-type PshVal struct {
+type ReqPshVal struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -255,8 +255,8 @@ type PshVal struct {
 	LastChunkId uint64 `protobuf:"varint,3,opt,name=last_chunk_id,json=lastChunkId,proto3" json:"last_chunk_id,omitempty"`
 }
 
-func (x *PshVal) Reset() {
-	*x = PshVal{}
+func (x *ReqPshVal) Reset() {
+	*x = ReqPshVal{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -264,13 +264,13 @@ func (x *PshVal) Reset() {
 	}
 }
 
-func (x *PshVal) String() string {
+func (x *ReqPshVal) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PshVal) ProtoMessage() {}
+func (*ReqPshVal) ProtoMessage() {}
 
-func (x *PshVal) ProtoReflect() protoreflect.Message {
+func (x *ReqPshVal) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -282,26 +282,26 @@ func (x *PshVal) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PshVal.ProtoReflect.Descriptor instead.
-func (*PshVal) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqPshVal.ProtoReflect.Descriptor instead.
+func (*ReqPshVal) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PshVal) GetRequestId() uint64 {
+func (x *ReqPshVal) GetRequestId() uint64 {
 	if x != nil {
 		return x.RequestId
 	}
 	return 0
 }
 
-func (x *PshVal) GetBlockId() uint64 {
+func (x *ReqPshVal) GetBlockId() uint64 {
 	if x != nil {
 		return x.BlockId
 	}
 	return 0
 }
 
-func (x *PshVal) GetLastChunkId() uint64 {
+func (x *ReqPshVal) GetLastChunkId() uint64 {
 	if x != nil {
 		return x.LastChunkId
 	}
@@ -309,7 +309,7 @@ func (x *PshVal) GetLastChunkId() uint64 {
 }
 
 // Mark file as finished
-type PshEof struct {
+type ReqPshEof struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -317,8 +317,8 @@ type PshEof struct {
 	RequestId uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 }
 
-func (x *PshEof) Reset() {
-	*x = PshEof{}
+func (x *ReqPshEof) Reset() {
+	*x = ReqPshEof{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_request_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -326,13 +326,13 @@ func (x *PshEof) Reset() {
 	}
 }
 
-func (x *PshEof) String() string {
+func (x *ReqPshEof) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PshEof) ProtoMessage() {}
+func (*ReqPshEof) ProtoMessage() {}
 
-func (x *PshEof) ProtoReflect() protoreflect.Message {
+func (x *ReqPshEof) ProtoReflect() protoreflect.Message {
 	mi := &file_request_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -344,12 +344,12 @@ func (x *PshEof) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PshEof.ProtoReflect.Descriptor instead.
-func (*PshEof) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqPshEof.ProtoReflect.Descriptor instead.
+func (*ReqPshEof) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *PshEof) GetRequestId() uint64 {
+func (x *ReqPshEof) GetRequestId() uint64 {
 	if x != nil {
 		return x.RequestId
 	}
@@ -360,34 +360,35 @@ var File_request_proto protoreflect.FileDescriptor
 
 var file_request_proto_rawDesc = []byte{
 	0x0a, 0x0d, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12,
-	0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x1e, 0x0a, 0x03, 0x53, 0x79, 0x6e, 0x12,
-	0x17, 0x0a, 0x07, 0x6d, 0x61, 0x78, 0x5f, 0x6d, 0x74, 0x75, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d,
-	0x52, 0x06, 0x6d, 0x61, 0x78, 0x4d, 0x74, 0x75, 0x22, 0x15, 0x0a, 0x03, 0x46, 0x69, 0x6e, 0x12,
-	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x22,
-	0x3d, 0x0a, 0x03, 0x50, 0x73, 0x68, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69,
-	0x7a, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x5d,
-	0x0a, 0x06, 0x50, 0x73, 0x68, 0x44, 0x61, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x49, 0x64, 0x22, 0x66, 0x0a,
-	0x06, 0x50, 0x73, 0x68, 0x56, 0x61, 0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
-	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x49,
-	0x64, 0x12, 0x22, 0x0a, 0x0d, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f,
-	0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x68,
-	0x75, 0x6e, 0x6b, 0x49, 0x64, 0x22, 0x27, 0x0a, 0x06, 0x50, 0x73, 0x68, 0x45, 0x6f, 0x66, 0x12,
-	0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x64, 0x42, 0x44,
-	0x5a, 0x42, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65, 0x6e, 0x63,
-	0x68, 0x61, 0x6e, 0x74, 0x39, 0x37, 0x2f, 0x66, 0x69, 0x6c, 0x65, 0x2d, 0x73, 0x79, 0x6e, 0x63,
-	0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2d, 0x33, 0x2f, 0x70, 0x62, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x21, 0x0a, 0x06, 0x52, 0x65, 0x71, 0x53,
+	0x79, 0x6e, 0x12, 0x17, 0x0a, 0x07, 0x6d, 0x61, 0x78, 0x5f, 0x6d, 0x74, 0x75, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0d, 0x52, 0x06, 0x6d, 0x61, 0x78, 0x4d, 0x74, 0x75, 0x22, 0x18, 0x0a, 0x06, 0x52,
+	0x65, 0x71, 0x46, 0x69, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x02, 0x69, 0x64, 0x22, 0x40, 0x0a, 0x06, 0x52, 0x65, 0x71, 0x50, 0x73, 0x68, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
+	0x61, 0x74, 0x68, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x60, 0x0a, 0x09, 0x52, 0x65, 0x71, 0x50, 0x73,
+	0x68, 0x44, 0x61, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x12, 0x19,
+	0x0a, 0x08, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x07, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x49, 0x64, 0x22, 0x69, 0x0a, 0x09, 0x52, 0x65, 0x71,
+	0x50, 0x73, 0x68, 0x56, 0x61, 0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x69,
+	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64,
+	0x12, 0x22, 0x0a, 0x0d, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x69,
+	0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x68, 0x75,
+	0x6e, 0x6b, 0x49, 0x64, 0x22, 0x2a, 0x0a, 0x09, 0x52, 0x65, 0x71, 0x50, 0x73, 0x68, 0x45, 0x6f,
+	0x66, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x64,
+	0x42, 0x44, 0x5a, 0x42, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65,
+	0x6e, 0x63, 0x68, 0x61, 0x6e, 0x74, 0x39, 0x37, 0x2f, 0x66, 0x69, 0x6c, 0x65, 0x2d, 0x73, 0x79,
+	0x6e, 0x63, 0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2d, 0x33, 0x2f, 0x70,
+	0x62, 0x74, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -404,12 +405,12 @@ func file_request_proto_rawDescGZIP() []byte {
 
 var file_request_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_request_proto_goTypes = []interface{}{
-	(*Syn)(nil),    // 0: request.Syn
-	(*Fin)(nil),    // 1: request.Fin
-	(*Psh)(nil),    // 2: request.Psh
-	(*PshDat)(nil), // 3: request.PshDat
-	(*PshVal)(nil), // 4: request.PshVal
-	(*PshEof)(nil), // 5: request.PshEof
+	(*ReqSyn)(nil),    // 0: request.ReqSyn
+	(*ReqFin)(nil),    // 1: request.ReqFin
+	(*ReqPsh)(nil),    // 2: request.ReqPsh
+	(*ReqPshDat)(nil), // 3: request.ReqPshDat
+	(*ReqPshVal)(nil), // 4: request.ReqPshVal
+	(*ReqPshEof)(nil), // 5: request.ReqPshEof
 }
 var file_request_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -426,7 +427,7 @@ func file_request_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_request_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Syn); i {
+			switch v := v.(*ReqSyn); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -438,7 +439,7 @@ func file_request_proto_init() {
 			}
 		}
 		file_request_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Fin); i {
+			switch v := v.(*ReqFin); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -450,7 +451,7 @@ func file_request_proto_init() {
 			}
 		}
 		file_request_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Psh); i {
+			switch v := v.(*ReqPsh); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -462,7 +463,7 @@ func file_request_proto_init() {
 			}
 		}
 		file_request_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PshDat); i {
+			switch v := v.(*ReqPshDat); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -474,7 +475,7 @@ func file_request_proto_init() {
 			}
 		}
 		file_request_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PshVal); i {
+			switch v := v.(*ReqPshVal); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -486,7 +487,7 @@ func file_request_proto_init() {
 			}
 		}
 		file_request_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PshEof); i {
+			switch v := v.(*ReqPshEof); i {
 			case 0:
 				return &v.state
 			case 1:

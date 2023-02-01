@@ -5,4 +5,5 @@ use (
 	./prototypes/go-udp
 	./prototypes/proto-1
 	./prototypes/proto-2b
+	./prototypes/proto-3
 )
