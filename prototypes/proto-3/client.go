@@ -68,7 +68,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 	}
 	defer fileReader.Close()
 
-	var currentBlockID uint64 = 1
+	var currentBlockID uint64 = 0
 	var lastChunkID uint64 = 0
 	var seekOffset int = 0
 	// Chunk ID -> Seek Offset
@@ -115,6 +115,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePath string) 
 			// NOTE this ensures file position is reset to last position if a resend was issued
 			fileReader.Seek(int64(seekOffset), 0)
 			currentBlockID++
+			lastChunkID = 0
 			clearChunkIDOffsets()
 
 			chunksSent := uint(0)

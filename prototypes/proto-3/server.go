@@ -53,7 +53,7 @@ func receivePSH(buffer []byte, conn *net.UDPConn) (core.Message, map[uint64]map[
 	for _, rawChunk := range queuedPayloadChunks {
 		chunk := core.GetMessage(rawChunk, true)
 		header := chunk.Header.(*pbtypes.ReqPshDat)
-		if receivedChunks[header.BlockId] == nil {
+		if _, exists := receivedChunks[header.BlockId]; !exists {
 			receivedChunks[header.BlockId] = make(map[uint64]core.Message)
 		}
 		receivedChunks[header.BlockId][header.ChunkId] = chunk
@@ -125,7 +125,7 @@ func server(address string, mtu uint32) {
 		// add received chunks (if there are any)
 		for blockID, block := range newBlocks {
 			for chunkID, chunk := range block {
-				if receivedChunks[blockID] == nil {
+				if _, exists := receivedChunks[blockID]; !exists {
 					receivedChunks[blockID] = make(map[uint64]core.Message)
 				}
 				receivedChunks[blockID][chunkID] = chunk
