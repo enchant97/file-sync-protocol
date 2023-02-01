@@ -5,7 +5,8 @@ option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-3/
 
 // Init a new connection, send capabilities
 message ReqSyn {
-    uint32 max_mtu = 1;
+    uint64 id = 1;
+    uint32 max_mtu = 2;
 }
 
 // Leave
