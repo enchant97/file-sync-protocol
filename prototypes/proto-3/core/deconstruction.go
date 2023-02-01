@@ -64,7 +64,7 @@ func GetMessage(rawMessage []byte, isClient bool) Message {
 
 	// Find header length
 	offsetIndex += 1
-	headerLength := binary.BigEndian.Uint64(rawMessage[offsetIndex:5])
+	headerLength := binary.BigEndian.Uint32(rawMessage[offsetIndex:5])
 
 	// Process header
 	offsetIndex += 4
@@ -72,7 +72,7 @@ func GetMessage(rawMessage []byte, isClient bool) Message {
 
 	// find payload length
 	offsetIndex += int(headerLength)
-	payloadLength := binary.BigEndian.Uint64(rawMessage[offsetIndex : offsetIndex+4])
+	payloadLength := binary.BigEndian.Uint32(rawMessage[offsetIndex : offsetIndex+4])
 
 	// process payload
 	offsetIndex += 4
