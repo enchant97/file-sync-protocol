@@ -3,7 +3,7 @@ This prototype I will alter the first prototype to improve handling of when lots
 
 - Very basic error correction
 - Dummy Handshake
-- Send one real file from client to server
+- Send real file(s) from client to server
   - Handle resend of missing file packets
   - Send chunks in blocks and verify at each block (receiver get's a more ordered send if there is packet loss)
   - Blocks are entirely handled by the sender, receiver does not need to keep track of them (reduces complexity)

@@ -3,7 +3,7 @@ This prototype I will test my first design of the protocol. It will only include
 
 - Very basic error correction
 - Dummy Handshake
-- Send one real file from client to server
+- Send real file(s) from client to server
   - Handle resend of missing file packets
 - Customisable MTU size for testing
 - Dummy connection close
@@ -20,7 +20,7 @@ go run . server 127.0.0.1:9000
 ### Client
 
 ```
-go run . client 127.0.0.1:9000 file-to-send.txt
+go run . client 127.0.0.1:9000 [file paths to send...]
 ```
 
 ## Discovered Issues
