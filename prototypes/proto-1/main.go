@@ -31,7 +31,7 @@ func main() {
 	}
 	if args[1] == "client" {
 		log.Println("starting client...")
-		client(args[2], mtu, args[3])
+		client(args[2], mtu, args[3:])
 	}
 	log.Println("done")
 }

@@ -70,6 +70,7 @@ func server(address string, mtu uint32) {
 
 	// accept SYN
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+	currentRequestID := receivedMessage.Header.(*pbtypes.SynClient).Id
 	// set send mtu to match requested client's
 	sendMTU := int(receivedMessage.Header.(*pbtypes.SynClient).Mtu)
 	log.Printf("send MTU = '%d'\n", sendMTU)
@@ -79,7 +80,7 @@ func server(address string, mtu uint32) {
 		int(mtu),
 		core.PacketTypeACK,
 		&pbtypes.AckServer{
-			ReqId: 1,
+			ReqId: currentRequestID,
 			Type:  pbtypes.AckTypes_ACK_SYN,
 		},
 		&pbtypes.AckSynServer{
@@ -90,99 +91,106 @@ func server(address string, mtu uint32) {
 	)
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
-	// accept REQ for PSH
-	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
-	pushFilePath := receivedMessage.Meta.(*pbtypes.ReqPshClient).Path
-	pushFilePath = path.Join("./data", pushFilePath)
-
-	// send ACK
-	ackMessage, _, _ = core.MakeMessage(
-		sendMTU,
-		core.PacketTypeACK,
-		&pbtypes.AckServer{
-			ReqId: 2,
-			Type:  pbtypes.AckTypes_ACK_REQ,
-		},
-		nil,
-		nil,
-	)
-	conn.WriteToUDP(ackMessage, receivedMessageAddr)
-
-	// accept pushed chunks
-	var receivedChunks map[uint64]core.Message
-	receivedMessage, receivedChunks, receivedMessageAddr = receivePSH(buffer, conn)
-
-	lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
-
 	for {
-		missingChunkIDs := make([]uint64, 0)
+		receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 
-		// check for missing chunks
-		for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
-			chunkNum := uint64(chunkNum)
-			if _, exists := receivedChunks[chunkNum]; !exists {
-				missingChunkIDs = append(missingChunkIDs, chunkNum)
-			}
-		}
-
-		// not missing any chunks, so break
-		if len(missingChunkIDs) == 0 {
-			break
-		}
-
-		log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
-
-		// HACK really inefficient way of handling when message is too large
-
-		var resendMessage []byte
-		var chunksLenToRequest = len(missingChunkIDs)
-		for {
-			resendMessage, _, err = core.MakeMessage(
+		// handle REQ messages, ignoring unknown
+		if receivedMessage.MessageType == core.PacketTypeFIN {
+			// receive FIN
+			currentRequestID = receivedMessage.Header.(*pbtypes.FinClient).Id
+			// send ACK
+			ackMessage, _, _ = core.MakeMessage(
 				sendMTU,
-				core.PacketTypeREQ,
-				&pbtypes.ReqServer{
-					ReqId: 2,
-					Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
-				},
-				&pbtypes.ReqResendChunk{
-					ChunkIds: missingChunkIDs[:chunksLenToRequest],
+				core.PacketTypeACK,
+				&pbtypes.AckServer{
+					ReqId: currentRequestID,
+					Type:  pbtypes.AckTypes_ACK_FIN,
 				},
 				nil,
+				nil,
 			)
-			if err == nil {
-				break
-			}
-			// too many chunk id's to fit in packet, reduce by one
-			chunksLenToRequest--
-			log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
-		}
-		conn.WriteToUDP(resendMessage, receivedMessageAddr)
+			conn.WriteToUDP(ackMessage, receivedMessageAddr)
+			break
+		} else if receivedMessage.MessageType == core.PacketTypeREQ {
+			// accept REQ for PSH
+			currentRequestID = receivedMessage.Header.(*pbtypes.ReqClient).Id
+			pushFilePath := receivedMessage.Meta.(*pbtypes.ReqPshClient).Path
+			pushFilePath = path.Join("./data", pushFilePath)
 
-		_, newChunks, _ := receivePSH(buffer, conn)
-		for chunkID, chunk := range newChunks {
-			receivedChunks[chunkID] = chunk
+			// send ACK
+			ackMessage, _, _ = core.MakeMessage(
+				sendMTU,
+				core.PacketTypeACK,
+				&pbtypes.AckServer{
+					ReqId: currentRequestID,
+					Type:  pbtypes.AckTypes_ACK_REQ,
+				},
+				nil,
+				nil,
+			)
+			conn.WriteToUDP(ackMessage, receivedMessageAddr)
+
+			// accept pushed chunks
+			var receivedChunks map[uint64]core.Message
+			receivedMessage, receivedChunks, receivedMessageAddr = receivePSH(buffer, conn)
+
+			lastChunkID := int(receivedMessage.Meta.(*pbtypes.ReqPshVerifyClient).LastChunkId)
+
+			for {
+				missingChunkIDs := make([]uint64, 0)
+
+				// check for missing chunks
+				for chunkNum := 1; chunkNum <= lastChunkID; chunkNum++ {
+					chunkNum := uint64(chunkNum)
+					if _, exists := receivedChunks[chunkNum]; !exists {
+						missingChunkIDs = append(missingChunkIDs, chunkNum)
+					}
+				}
+
+				// not missing any chunks, so break
+				if len(missingChunkIDs) == 0 {
+					break
+				}
+
+				log.Printf("missing '%d' chunks, expected '%d' chunks\n", len(missingChunkIDs), lastChunkID)
+
+				// HACK really inefficient way of handling when message is too large
+
+				var resendMessage []byte
+				var chunksLenToRequest = len(missingChunkIDs)
+				for {
+					resendMessage, _, err = core.MakeMessage(
+						sendMTU,
+						core.PacketTypeREQ,
+						&pbtypes.ReqServer{
+							ReqId: currentRequestID,
+							Type:  pbtypes.ReqTypes_REQ_RESEND_CHUNK,
+						},
+						&pbtypes.ReqResendChunk{
+							ChunkIds: missingChunkIDs[:chunksLenToRequest],
+						},
+						nil,
+					)
+					if err == nil {
+						break
+					}
+					// too many chunk id's to fit in packet, reduce by one
+					chunksLenToRequest--
+					log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
+				}
+				conn.WriteToUDP(resendMessage, receivedMessageAddr)
+
+				_, newChunks, _ := receivePSH(buffer, conn)
+				for chunkID, chunk := range newChunks {
+					receivedChunks[chunkID] = chunk
+				}
+			}
+
+			// send ACK
+			conn.WriteToUDP(ackMessage, receivedMessageAddr)
+
+			// write result to disk
+			writeFromChunked(pushFilePath, receivedChunks)
 		}
 	}
-
-	// send ACK
-	conn.WriteToUDP(ackMessage, receivedMessageAddr)
-
-	// write result to disk
-	writeFromChunked(pushFilePath, receivedChunks)
-
-	// receive FIN
-	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
-
-	// send ACK
-	ackMessage, _, _ = core.MakeMessage(
-		sendMTU,
-		core.PacketTypeACK,
-		&pbtypes.AckServer{
-			ReqId: 0,
-			Type:  pbtypes.AckTypes_ACK_FIN,
-		},
-		nil,
-		nil,
-	)
-	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 }
