@@ -41,7 +41,7 @@ func main() {
 		log.Printf("chunks per block = '%d'\n", chunks_per_block)
 
 		log.Println("starting client...")
-		client(args[2], mtu, chunks_per_block, args[3])
+		client(args[2], mtu, chunks_per_block, args[3:])
 	}
 	log.Println("done")
 }
