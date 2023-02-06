@@ -20,7 +20,11 @@ go run . server 127.0.0.1:9000
 ### Client
 
 ```
-go run . client 127.0.0.1:9000 [file paths to send...]
+go run . client 127.0.0.1:9000 <file path 1> [<file path 2>, <file path 3>...]
+
+or
+
+go run . client 127.0.0.1:9000 <directory path>
 ```
 
 ## Discovered Issues
