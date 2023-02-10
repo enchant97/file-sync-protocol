@@ -89,8 +89,9 @@ func server(address string, mtu uint32) {
 		int(mtu),
 		core.PacketTypeRes_SYN,
 		&pbtypes.ResSyn{
-			ClientId: rand.Uint32(),
-			MaxMtu:   mtu,
+			RequestId: receivedMessage.Header.(*pbtypes.ReqSyn).Id,
+			ClientId:  rand.Uint32(),
+			MaxMtu:    mtu,
 		},
 		nil,
 	)

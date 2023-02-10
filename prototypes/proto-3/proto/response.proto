@@ -5,8 +5,9 @@ option go_package = "github.com/enchant97/file-sync-protocol/prototypes/proto-3/
 
 // Accept a new connection, send capabilities
 message ResSyn {
-    uint32 max_mtu = 1;
-    uint32 client_id = 2;
+    uint64 request_id = 1;
+    uint32 max_mtu = 2;
+    uint32 client_id = 3;
 }
 
 // "Happy" path in response to a request
@@ -17,5 +18,5 @@ message ResAck {
 // "Sad" path in response to a PSH-VAL request
 message ResErrDat {
     uint64 request_id = 1;
-    repeated uint64 chunk_ids = 4;
+    repeated uint64 chunk_ids = 2;
 }

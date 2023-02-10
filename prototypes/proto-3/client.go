@@ -27,7 +27,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 	var receivedMessage core.Message
 	var currentRequestID uint64 = 1
 
-	// send SYN
+	// send SYN, receive SYN-ACK
 	messageToSend, _, _ := core.MakeMessage(
 		SYN_MTU_SIZE,
 		core.PacketTypeReq_SYN,
@@ -37,16 +37,14 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 		},
 		nil,
 	)
-	conn.Write(messageToSend)
+	receivedMessage = core.SendAndReceiveRequest(SYN_MTU_SIZE, messageToSend, core.PacketTypeRes_SYN, false, currentRequestID, buffer, *conn, nil)
 
-	// receive ACK
-	receivedMessage, _ = core.ReceiveMessage(buffer, conn, false)
 	// set send mtu to match requested server's
 	sendMTU := int(receivedMessage.Header.(*pbtypes.ResSyn).MaxMtu)
 	log.Printf("send MTU = '%d'\n", sendMTU)
 
 	for _, filePath := range filePaths {
-		// send Req for PSH
+		// send Req for PSH, receive ACK
 		currentRequestID++
 		fileInfo, _ := os.Stat(filePath)
 		messageToSend, _, _ = core.MakeMessage(
@@ -59,10 +57,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			},
 			nil,
 		)
-		conn.Write(messageToSend)
-
-		// receive ACK
-		core.ReceiveMessage(buffer, conn, false)
+		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
 
 		// push all chunks
 		fileReader, fileReadErr := os.Open(filePath)
@@ -139,7 +134,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			// HACK server cannot keep up
 			time.Sleep(time.Millisecond * 2)
 
-			// send REQ verify
+			// send REQ verify, receive ACK or REQ for resend
 			messageToSend, _, _ = core.MakeMessage(
 				sendMTU,
 				core.PacketTypeReq_PSH_VAL,
@@ -150,17 +145,14 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 				},
 				nil,
 			)
-			conn.Write(messageToSend)
-
-			// receive ACK or REQ for resend
-			receivedMessage, _ = core.ReceiveMessage(buffer, conn, false)
+			receivedMessage = core.SendAndReceiveRequest(sendMTU, messageToSend, 0, false, currentRequestID, buffer, *conn, nil)
 			if receivedMessage.MessageType != core.PacketTypeRes_ACK {
 				missingChunks = append(missingChunks, receivedMessage.Header.(*pbtypes.ResErrDat).ChunkIds...)
 				log.Printf("REQ for '%d' missing chunks", len(missingChunks))
 			}
 		}
 
-		// send EOF
+		// send EOF, receive ACK
 		messageToSend, _, _ = core.MakeMessage(
 			sendMTU,
 			core.PacketTypeReq_PSH_EOF,
@@ -169,13 +161,10 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			},
 			nil,
 		)
-		conn.Write(messageToSend)
-
-		// receive ACK
-		core.ReceiveMessage(buffer, conn, false)
+		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
 	}
 
-	// send FIN
+	// send FIN, receive ACK
 	currentRequestID++
 	messageToSend, _, _ = core.MakeMessage(
 		sendMTU,
@@ -185,8 +174,5 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 		},
 		nil,
 	)
-	conn.Write(messageToSend)
-
-	// receive ACK
-	core.ReceiveMessage(buffer, conn, false)
+	core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
 }
