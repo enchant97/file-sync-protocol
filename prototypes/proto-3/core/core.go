@@ -13,9 +13,9 @@ func ReceiveMessage(buffer []byte, conn *net.UDPConn, fromClient bool) (Message,
 	// TODO handle n=0 (connection closed)
 	n, addr, _ := conn.ReadFromUDP(buffer)
 	strippedBuffer := buffer[0:n]
-	log.Println(strippedBuffer)
+	log.Println("RX RAW =", strippedBuffer)
 	message := GetMessage(strippedBuffer, fromClient)
-	log.Println(message)
+	log.Println("RX DES =", message)
 	return message, addr
 }
 
@@ -57,18 +57,27 @@ func SendAndReceiveRequest(
 	// receive reply
 	var receivedMessage Message
 	var err error
+	if sendAddr == nil {
+		// send request as client
+		conn.Write(message)
+		log.Println("TX RAW =", message)
+	} else {
+		// send request as server
+		log.Println("TX RAW =", message)
+		conn.WriteToUDP(message, sendAddr)
+	}
 	for {
-		if sendAddr == nil {
-			// send request as client
-			conn.Write(message)
-		} else {
-			// send request as server
-			conn.WriteToUDP(message, sendAddr)
-		}
 		receivedMessage, _, err = ReceiveReplyOrTimeout(receiveBuffer, &conn, receiveIsClient)
 		if err != nil {
 			// timeout, resend
 			log.Println("timeout, resending request")
+			if sendAddr == nil {
+				// send request as client
+				conn.Write(message)
+			} else {
+				// send request as server
+				conn.WriteToUDP(message, sendAddr)
+			}
 		} else if receivePacketType != 0 && receivedMessage.MessageType != receivePacketType {
 			// not the reply we want, ignore
 			log.Println("received message with wrong packet type, ignoring")

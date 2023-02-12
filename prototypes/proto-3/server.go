@@ -41,9 +41,9 @@ func receivePSH(buffer []byte, conn *net.UDPConn) (core.Message, map[uint64]map[
 			queuedPayloadChunks = append(queuedPayloadChunks, dstBytes)
 		} else {
 			strippedBuffer := buffer[0:n]
-			log.Println(strippedBuffer)
+			log.Println("RX(PSH) RAW =", strippedBuffer)
 			doneMessage = core.GetMessage(strippedBuffer, true)
-			log.Println(doneMessage)
+			log.Println("RX(PSH) SER =", doneMessage)
 			break
 		}
 	}
@@ -79,8 +79,12 @@ func server(address string, mtu uint32) {
 	var receivedMessageAddr *net.UDPAddr
 	var currentRequestID uint64
 
+	var lastReceivedMessage core.Message
+	var lastSentMessage []byte
+
 	// accept SYN
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
+	lastReceivedMessage = receivedMessage
 	// set send mtu to match requested client's
 	sendMTU := int(receivedMessage.Header.(*pbtypes.ReqSyn).MaxMtu)
 	currentRequestID = receivedMessage.Header.(*pbtypes.ReqSyn).Id
@@ -98,12 +102,22 @@ func server(address string, mtu uint32) {
 		nil,
 	)
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
+	lastSentMessage = ackMessage
 
 	for {
 		receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 
-		// handle REQ messages, ignoring unknown
+		// resend last message if we receive the same message again
+		if receivedMessage.Matches(lastReceivedMessage) {
+			log.Println("resending last message")
+			conn.WriteToUDP(lastSentMessage, receivedMessageAddr)
+			continue
+		}
+
+		lastReceivedMessage = receivedMessage
+
 		if receivedMessage.MessageType == core.PacketTypeReq_FIN {
+			// FIXME handle ACK resend
 			// accept REQ for FIN
 			currentRequestID = receivedMessage.Header.(*pbtypes.ReqFin).Id
 			ackMessage, _, _ = core.MakeMessage(
@@ -132,19 +146,28 @@ func server(address string, mtu uint32) {
 				nil,
 			)
 			conn.WriteToUDP(ackMessage, receivedMessageAddr)
+			lastSentMessage = ackMessage
 
 			// Block ID -> Chunk ID -> Chunk
 			receivedChunks := make(map[uint64]map[uint64]core.Message)
 			eof := false
 
 			// handle PSH until EOF
+			log.Println("handling PSH until EOF")
 			for !eof {
 				// Receive PSH or REQ
-				var newBlocks map[uint64]map[uint64]core.Message
-				receivedMessage, newBlocks, receivedMessageAddr = receivePSH(buffer, conn)
+				var newChunks map[uint64]map[uint64]core.Message
+				receivedMessage, newChunks, receivedMessageAddr = receivePSH(buffer, conn)
+
+				// resend last message if we receive the same message again
+				if receivedMessage.Matches(lastReceivedMessage) {
+					log.Println("resending last message")
+					conn.WriteToUDP(lastSentMessage, receivedMessageAddr)
+					continue
+				}
 
 				// add received chunks (if there are any)
-				for blockID, block := range newBlocks {
+				for blockID, block := range newChunks {
 					for chunkID, chunk := range block {
 						if _, exists := receivedChunks[blockID]; !exists {
 							receivedChunks[blockID] = make(map[uint64]core.Message)
@@ -153,16 +176,20 @@ func server(address string, mtu uint32) {
 					}
 				}
 
+				lastReceivedMessage = receivedMessage
+
 				if receivedMessage.MessageType == core.PacketTypeReq_PSH_EOF {
 					// write result to disk
 					writeFromChunked(pushFilePath, receivedChunks)
 					// register EOF
 					eof = true
 					conn.WriteToUDP(ackMessage, receivedMessageAddr)
+					lastSentMessage = ackMessage
 				} else if receivedMessage.MessageType == core.PacketTypeReq_PSH_VAL {
 					// chunk range to validate
 					blockID := receivedMessage.Header.(*pbtypes.ReqPshVal).BlockId
 					lastChunkID := int(receivedMessage.Header.(*pbtypes.ReqPshVal).LastChunkId)
+					subRequestID := receivedMessage.Header.(*pbtypes.ReqPshVal).SubRequestId
 
 					// check for missing chunks
 					missingChunkIDs := make([]uint64, 0)
@@ -189,8 +216,10 @@ func server(address string, mtu uint32) {
 								sendMTU,
 								core.PacketTypeRes_ERR_DAT,
 								&pbtypes.ResErrDat{
-									RequestId: currentRequestID,
-									ChunkIds:  missingChunkIDs[:chunksLenToRequest],
+									RequestId:    currentRequestID,
+									SubRequestId: subRequestID,
+									BlockId:      blockID,
+									ChunkIds:     missingChunkIDs[:chunksLenToRequest],
 								},
 								nil,
 							)
@@ -202,12 +231,24 @@ func server(address string, mtu uint32) {
 							log.Printf("message to big, resizing to %d\n", chunksLenToRequest)
 						}
 						conn.WriteToUDP(resendMessage, receivedMessageAddr)
+						lastSentMessage = resendMessage
 					} else {
 						// no missing chunks were found
+						ackMessage, _, _ = core.MakeMessage(
+							sendMTU,
+							core.PacketTypeRes_ACK,
+							&pbtypes.ResAck{
+								RequestId:    currentRequestID,
+								SubRequestId: subRequestID,
+							},
+							nil,
+						)
 						conn.WriteToUDP(ackMessage, receivedMessageAddr)
+						lastSentMessage = ackMessage
 					}
 				}
 			}
+			log.Println("EOF received")
 		}
 	}
 }

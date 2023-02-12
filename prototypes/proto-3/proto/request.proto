@@ -31,8 +31,9 @@ message ReqPshDat {
 // Request to validate a block
 message ReqPshVal {
     uint64 request_id = 1;
-    uint64 block_id = 2;
-    uint64 last_chunk_id = 3;
+    uint64 sub_request_id = 2;
+    uint64 block_id = 3;
+    uint64 last_chunk_id = 4;
 }
 
 // Mark file as finished

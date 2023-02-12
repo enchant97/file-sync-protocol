@@ -16,6 +16,13 @@ type Message struct {
 	Payload     []byte
 }
 
+func (m *Message) Matches(other Message) bool {
+	if m.MessageType == other.MessageType && proto.Equal(m.Header, other.Header) {
+		return true
+	}
+	return false
+}
+
 func UnmarshalHeader(b []byte, m protoreflect.ProtoMessage) (protoreflect.ProtoMessage, error) {
 	err := proto.Unmarshal(b, m)
 	return m, err

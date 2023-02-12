@@ -5,7 +5,6 @@ import (
 	"net"
 	"os"
 	"path"
-	"time"
 
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-3/core"
 	"github.com/enchant97/file-sync-protocol/prototypes/proto-3/pbtypes"
@@ -46,6 +45,8 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 	for _, filePath := range filePaths {
 		// send Req for PSH, receive ACK
 		currentRequestID++
+		subRequestID := uint64(0)
+
 		fileInfo, _ := os.Stat(filePath)
 		messageToSend, _, _ = core.MakeMessage(
 			sendMTU,
@@ -97,6 +98,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 
 		for {
 			if len(missingChunks) == 0 && eof {
+				// EOF
 				break
 			}
 			if len(missingChunks) != 0 {
@@ -132,23 +134,34 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			}
 
 			// HACK server cannot keep up
-			time.Sleep(time.Millisecond * 2)
+			//time.Sleep(time.Millisecond * 2)
 
 			// send REQ verify, receive ACK or REQ for resend
+			subRequestID++
 			messageToSend, _, _ = core.MakeMessage(
 				sendMTU,
 				core.PacketTypeReq_PSH_VAL,
 				&pbtypes.ReqPshVal{
-					RequestId:   currentRequestID,
-					BlockId:     currentBlockID,
-					LastChunkId: lastChunkID,
+					RequestId:    currentRequestID,
+					SubRequestId: subRequestID,
+					BlockId:      currentBlockID,
+					LastChunkId:  lastChunkID,
 				},
 				nil,
 			)
-			receivedMessage = core.SendAndReceiveRequest(sendMTU, messageToSend, 0, false, currentRequestID, buffer, *conn, nil)
-			if receivedMessage.MessageType != core.PacketTypeRes_ACK {
-				missingChunks = append(missingChunks, receivedMessage.Header.(*pbtypes.ResErrDat).ChunkIds...)
-				log.Printf("REQ for '%d' missing chunks", len(missingChunks))
+			for {
+				log.Printf("Sending REQ(%d,%d) verify\n", currentRequestID, subRequestID)
+				receivedMessage = core.SendAndReceiveRequest(sendMTU, messageToSend, 0, false, currentRequestID, buffer, *conn, nil)
+				if receivedMessage.MessageType == core.PacketTypeRes_ACK && receivedMessage.Header.(*pbtypes.ResAck).SubRequestId == subRequestID {
+					// ACK received, continue
+					log.Printf("ACK received for block '%d'", currentBlockID)
+					break
+				} else if receivedMessage.MessageType == core.PacketTypeRes_ERR_DAT && receivedMessage.Header.(*pbtypes.ResErrDat).SubRequestId == subRequestID {
+					// REQ for resend received
+					missingChunks = append(missingChunks, receivedMessage.Header.(*pbtypes.ResErrDat).ChunkIds...)
+					log.Printf("REQ for '%d' missing chunks in block '%d'", len(missingChunks), currentBlockID)
+					break
+				}
 			}
 		}
 
