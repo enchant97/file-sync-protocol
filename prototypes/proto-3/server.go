@@ -77,11 +77,13 @@ func server(address string, mtu uint32) {
 	buffer := make([]byte, mtu)
 	var receivedMessage core.Message
 	var receivedMessageAddr *net.UDPAddr
+	var currentRequestID uint64
 
 	// accept SYN
 	receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 	// set send mtu to match requested client's
 	sendMTU := int(receivedMessage.Header.(*pbtypes.ReqSyn).MaxMtu)
+	currentRequestID = receivedMessage.Header.(*pbtypes.ReqSyn).Id
 	log.Printf("send MTU = '%d'\n", sendMTU)
 
 	// send SYN back
@@ -89,7 +91,7 @@ func server(address string, mtu uint32) {
 		int(mtu),
 		core.PacketTypeRes_SYN,
 		&pbtypes.ResSyn{
-			RequestId: receivedMessage.Header.(*pbtypes.ReqSyn).Id,
+			RequestId: currentRequestID,
 			ClientId:  rand.Uint32(),
 			MaxMtu:    mtu,
 		},
@@ -98,7 +100,6 @@ func server(address string, mtu uint32) {
 	conn.WriteToUDP(ackMessage, receivedMessageAddr)
 
 	for {
-		var currentRequestID uint64 = 0
 		receivedMessage, receivedMessageAddr = core.ReceiveMessage(buffer, conn, true)
 
 		// handle REQ messages, ignoring unknown
