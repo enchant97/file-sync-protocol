@@ -192,7 +192,6 @@ func server(address string, mtu uint32) {
 			currentChunkID := receivedMessage.Header.(*pbtypes.ReqPshDat).ChunkId
 			currentChunk := receivedMessage.Payload
 			currentFile.AddNewChunk(currentBlockID, currentChunkID, currentChunk)
-			sendAckMessage(currentRequestID, currentChunkID)
 		case core.PacketTypeReq_PSH_VAL:
 			// Handle PSH-VAL
 			currentSubRequestID = receivedMessage.Header.(*pbtypes.ReqPshVal).SubRequestId
