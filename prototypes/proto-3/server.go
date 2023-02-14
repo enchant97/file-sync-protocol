@@ -136,6 +136,21 @@ func server(address string, mtu uint32) {
 		sendMessage(resendMessage)
 	}
 
+	isReceivedMessageFromPast := func() bool {
+		if requestIdDescriptor := receivedMessage.Header.ProtoReflect().Descriptor().Fields().ByNumber(1); requestIdDescriptor != nil {
+			if receivedMessage.Header.ProtoReflect().Get(requestIdDescriptor).Uint() < currentRequestID {
+				return true
+			}
+			// validate sub request id (if it exists)
+			if subRequestIdDescriptor := receivedMessage.Header.ProtoReflect().Descriptor().Fields().ByName("sub_request_id"); subRequestIdDescriptor != nil && currentSubRequestID != 0 {
+				if receivedMessage.Header.ProtoReflect().Get(subRequestIdDescriptor).Uint() < currentSubRequestID {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
 	// receive messages from a single client
 	fin := false
 	for !fin {
@@ -148,12 +163,10 @@ func server(address string, mtu uint32) {
 			continue
 		}
 
-		// check if message is from the past
-		if descriptor := receivedMessage.Header.ProtoReflect().Descriptor().Fields().ByNumber(1); descriptor != nil && receivedMessage.Header.ProtoReflect().Get(descriptor).Uint() < currentRequestID {
+		if isReceivedMessageFromPast() {
 			log.Println("received message from the past, ignoring")
 			continue
 		}
-		// FIXME validate sub request id
 
 		// update last received message
 		lastReceivedMessage = receivedMessage
