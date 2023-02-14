@@ -1,13 +1,13 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"time"
 )
 
-const ReceiveTimeoutMS = 1000
+// TODO: make this configurable
+const ReceiveTimeoutMS = 100
 
 func ReceiveMessage(buffer []byte, conn *net.UDPConn, fromClient bool) (Message, *net.UDPAddr) {
 	// TODO handle n=0 (connection closed)
@@ -26,19 +26,19 @@ type ReceivedMessage struct {
 // Receives a message from a UDP connection,
 // or times out after the given number of milliseconds
 func ReceiveReplyOrTimeout(buffer []byte, conn *net.UDPConn, fromClient bool) (Message, *net.UDPAddr, error) {
-	receivedMessage := make(chan ReceivedMessage, 1)
-	go func() {
-		message, addr := ReceiveMessage(buffer, conn, fromClient)
-		receivedMessage <- ReceivedMessage{message, addr}
-	}()
-	select {
-	case <-time.After(time.Millisecond * time.Duration(ReceiveTimeoutMS)):
-		// Timeout occurred
-		return Message{}, nil, fmt.Errorf("timed out waiting for reply")
-	case message := <-receivedMessage:
-		// Message received ok
-		return message.Message, message.Addr, nil
+	conn.SetReadDeadline(time.Now().Add(time.Millisecond * time.Duration(ReceiveTimeoutMS)))
+	n, addr, err := conn.ReadFromUDP(buffer)
+	if err != nil {
+		if err, ok := err.(net.Error); !ok || !err.Timeout() {
+			// not a timeout, panic
+			panic(err)
+		}
+		return Message{}, nil, err
 	}
+	strippedBuffer := buffer[0:n]
+	message := GetMessage(strippedBuffer, fromClient)
+	log.Println("RX =", message.MessageType, message.Header)
+	return message, addr, nil
 }
 
 // Sends a request and waits for a reply,
