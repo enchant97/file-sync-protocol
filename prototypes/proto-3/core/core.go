@@ -13,9 +13,8 @@ func ReceiveMessage(buffer []byte, conn *net.UDPConn, fromClient bool) (Message,
 	// TODO handle n=0 (connection closed)
 	n, addr, _ := conn.ReadFromUDP(buffer)
 	strippedBuffer := buffer[0:n]
-	log.Println("RX RAW =", strippedBuffer)
 	message := GetMessage(strippedBuffer, fromClient)
-	log.Println("RX DES =", message)
+	log.Println("RX =", message.MessageType, message.Header)
 	return message, addr
 }
 
