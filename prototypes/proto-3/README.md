@@ -11,7 +11,26 @@ This prototype I will improve on proto-1 & proto-2B. This will include:
   - Payload length will be uint32 instead of uint64
 
 ## Usage
-Same as proto-1
+### Environment Variables
+- Adjust packet size `NET_MTU` (client, server)
+- How many chunks to send before a verification `CHUNKS_PER_BLOCK` (client)
+- How long to wait before sending message again `TIMEOUT_MS` (client)
+
+### Server
+
+```
+go run . server 127.0.0.1:9000
+```
+
+### Client
+
+```
+go run . client 127.0.0.1:9000 <file path 1> [<file path 2>, <file path 3>...]
+
+or
+
+go run . client 127.0.0.1:9000 <directory path>
+```
 
 ## Discovered Issues
 TBD
