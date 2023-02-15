@@ -58,8 +58,18 @@ func main() {
 		}
 		log.Printf("chunks per block = '%d'\n", chunks_per_block)
 
+		timeoutMS := uint(100)
+		if value, isSet := os.LookupEnv("TIMEOUT_MS"); isSet {
+			value, err := strconv.ParseUint(value, 10, 32)
+			if err != nil {
+				log.Fatalln("TIMEOUT_MS invalid")
+			}
+			timeoutMS = uint(value)
+		}
+		log.Printf("receive timeout = '%d'ms\n", timeoutMS)
+
 		log.Println("starting client...")
-		client(args[2], mtu, chunks_per_block, processClientPathInput(args[3:]))
+		client(args[2], mtu, chunks_per_block, timeoutMS, processClientPathInput(args[3:]))
 	}
 	log.Println("done")
 }

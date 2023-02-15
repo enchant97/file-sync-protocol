@@ -14,7 +14,7 @@ import (
 // https://stackoverflow.com/a/1099359
 const SYN_MTU_SIZE = 512 - core.Ipv4ReservedBytes
 
-func client(address string, mtu uint32, chunks_per_block uint, filePaths []string) {
+func client(address string, mtu uint32, chunks_per_block uint, timeoutMS uint, filePaths []string) {
 	s, _ := net.ResolveUDPAddr("udp4", address)
 	conn, err := net.DialUDP("udp4", nil, s)
 	if err != nil {
@@ -36,7 +36,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 		},
 		nil,
 	)
-	receivedMessage = core.SendAndReceiveRequest(SYN_MTU_SIZE, messageToSend, core.PacketTypeRes_SYN, false, currentRequestID, buffer, *conn, nil)
+	receivedMessage = core.SendAndReceiveRequest(SYN_MTU_SIZE, messageToSend, core.PacketTypeRes_SYN, false, currentRequestID, buffer, *conn, nil, timeoutMS)
 
 	// set send mtu to match requested server's
 	sendMTU := int(receivedMessage.Header.(*pbtypes.ResSyn).MaxMtu)
@@ -58,7 +58,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			},
 			nil,
 		)
-		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
+		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil, timeoutMS)
 
 		// push all chunks
 		fileReader, fileReadErr := os.Open(filePath)
@@ -151,7 +151,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			)
 			for {
 				log.Printf("Sending REQ(%d,%d) verify\n", currentRequestID, subRequestID)
-				receivedMessage = core.SendAndReceiveRequest(sendMTU, messageToSend, 0, false, currentRequestID, buffer, *conn, nil)
+				receivedMessage = core.SendAndReceiveRequest(sendMTU, messageToSend, 0, false, currentRequestID, buffer, *conn, nil, timeoutMS)
 				if receivedMessage.MessageType == core.PacketTypeRes_ACK && receivedMessage.Header.(*pbtypes.ResAck).SubRequestId == subRequestID {
 					// ACK received, continue
 					log.Printf("ACK received for block '%d'", currentBlockID)
@@ -174,7 +174,7 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 			},
 			nil,
 		)
-		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
+		core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil, timeoutMS)
 	}
 
 	// send FIN, receive ACK
@@ -187,5 +187,5 @@ func client(address string, mtu uint32, chunks_per_block uint, filePaths []strin
 		},
 		nil,
 	)
-	core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil)
+	core.SendAndReceiveRequest(sendMTU, messageToSend, core.PacketTypeRes_ACK, false, currentRequestID, buffer, *conn, nil, timeoutMS)
 }

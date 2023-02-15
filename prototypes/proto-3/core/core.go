@@ -6,9 +6,6 @@ import (
 	"time"
 )
 
-// TODO: make this configurable
-const ReceiveTimeoutMS = 100
-
 func ReceiveMessage(buffer []byte, conn *net.UDPConn, fromClient bool) (Message, *net.UDPAddr) {
 	// TODO handle n=0 (connection closed)
 	n, addr, _ := conn.ReadFromUDP(buffer)
@@ -25,8 +22,8 @@ type ReceivedMessage struct {
 
 // Receives a message from a UDP connection,
 // or times out after the given number of milliseconds
-func ReceiveReplyOrTimeout(buffer []byte, conn *net.UDPConn, fromClient bool) (Message, *net.UDPAddr, error) {
-	conn.SetReadDeadline(time.Now().Add(time.Millisecond * time.Duration(ReceiveTimeoutMS)))
+func ReceiveReplyOrTimeout(buffer []byte, conn *net.UDPConn, fromClient bool, timeoutMS uint) (Message, *net.UDPAddr, error) {
+	conn.SetReadDeadline(time.Now().Add(time.Millisecond * time.Duration(timeoutMS)))
 	n, addr, err := conn.ReadFromUDP(buffer)
 	if err != nil {
 		if err, ok := err.(net.Error); !ok || !err.Timeout() {
@@ -52,6 +49,7 @@ func SendAndReceiveRequest(
 	receiveBuffer []byte,
 	conn net.UDPConn,
 	sendAddr *net.UDPAddr,
+	timeoutMS uint,
 ) Message {
 	// receive reply
 	var receivedMessage Message
@@ -66,7 +64,7 @@ func SendAndReceiveRequest(
 		conn.WriteToUDP(message, sendAddr)
 	}
 	for {
-		receivedMessage, _, err = ReceiveReplyOrTimeout(receiveBuffer, &conn, receiveIsClient)
+		receivedMessage, _, err = ReceiveReplyOrTimeout(receiveBuffer, &conn, receiveIsClient, timeoutMS)
 		if err != nil {
 			// timeout, resend
 			log.Println("timeout, resending request")
