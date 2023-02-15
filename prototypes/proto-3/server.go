@@ -54,6 +54,9 @@ func (cf *CurrentFile) WriteToFile() {
 }
 
 func server(address string, mtu uint32) {
+	// ensure output directory exists
+	os.MkdirAll(core.OutputDirectory, os.ModePerm)
+
 	s, err := net.ResolveUDPAddr("udp4", address)
 
 	if err != nil {
@@ -193,7 +196,7 @@ func server(address string, mtu uint32) {
 			// Handle REQ for PSH
 			currentRequestID = receivedMessage.Header.(*pbtypes.ReqPsh).Id
 			filePath := receivedMessage.Header.(*pbtypes.ReqPsh).Path
-			filePath = path.Join("./data", filePath)
+			filePath = path.Join(core.OutputDirectory, filePath)
 			currentFile = CurrentFile{
 				FilePath: filePath,
 				Blocks:   make(map[uint64]map[uint64][]byte),

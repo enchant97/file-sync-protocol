@@ -17,3 +17,5 @@ const (
 	PacketTypeRes_ACK     PacketType = 2
 	PacketTypeRes_ERR_DAT PacketType = 10
 )
+
+const OutputDirectory = "./data"
