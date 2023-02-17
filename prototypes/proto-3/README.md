@@ -33,10 +33,15 @@ go run . client 127.0.0.1:9000 <directory path>
 ```
 
 ## Discovered Issues
-TBD
+- Slower than previous prototypes, most likely due to extra error correction checks
+  - Code could be rewritten to be more performant?
+- Large number of resends for last message sent from client
 
 ## Fixed Issues
-TBD
+- 814c3: Incomplete message sending (receive timeout method was broken)
+- 0e422: Server unable to detect old/past messages (fixed by check if received id is less than current)
+- 00cee: ACK was incorrectly sent for every PSH-DAT received (fixed by removing send ack call)
+- eb664: ACK message did not send real request id
 
 ## Structure
 ### Packet
