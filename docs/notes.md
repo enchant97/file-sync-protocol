@@ -4,11 +4,24 @@
 - Project (05/05/2023)
 
 
+## Use Case
+- Active file replication
+  - Always active
+  - Transfer on file change
+- Operation over a internal network
+- Ability to handle sending many files, mostly small (less than 1MB)
+
+
 ## Goals
 - Transfer files between client and server over a network
 - Be reliable, must be able to handle connection loss by recovering lost data
   - Handle incomplete transfers without resending the whole file (send only what's missing)
-- Minimal idle transfers, when nothing is happening minimal data is sent
+- Minimal idle transfers, when nothing is happening minimal/no data is sent
+
+
+## Non Goals
+- Ability to diff files (only copy changes)
+- Ability to handle transfer of open files, only focusing on closed files
 
 
 ## Related Projects
