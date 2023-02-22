@@ -9,3 +9,4 @@ Log of major events that have happened during the project.
 | 30-11-2022 | Meeting | Showed progress (report structure, tested other implementations), will work on poster & protocol design |
 | 14-12-2022 | Meeting | Showed proto-1 & poster, will contine to improve poster                                                 |
 | 08-02-2023 | Meeting | Discussed possible future & usecase of protocol                                                         |
+| 22-02-2023 | Meeting | Discussed proto-3 improvements, will work on initial report writing for next meeting                    |
