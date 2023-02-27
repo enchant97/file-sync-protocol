@@ -1,0 +1,9 @@
+After looking into most of the existing solutions that are publicly available all of them are using TCP for the transport layer.
+
+TCP was most likely used since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on the network interface card reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it. This would of been important at the time these protocols were first used as machines were limited on the amount of processing power and memory available. Also the reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
+
+I believe a modern solution that uses UDP for the transport layer protocol; could be created to allow for less network overhead resulting in more bandwidth being available for other network activity.
+
+Since most modern networks now have little to no packet loss due to more modern network technology being used such as a switch; eliminating packet collisions, having TCP acknowledgements for every packet is wasteful and could increase the latency, due to the constant pausing.
+
+Compared to TCP, UDP is a simpler protocol since there is no checking for lost or out of order packets. It also is a connectionless protocol meaning that there is no handshake to initiate a connection. The lack of these features means it is up to the application layer to implement (or not). Since the project is transferring files across a network, it will be important to have error checking; however there is more freedom to how it can be implemented since there is no existing error checking.
