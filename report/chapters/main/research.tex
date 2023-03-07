@@ -1,21 +1,26 @@
-After looking into most of the existing solutions that are publicly available all of them are using TCP for the transport layer.
+After investigating existing solutions, they are all based on using TCP for the transport layer. However this may not be the best method since modern technology can be used since these protocols were created.
 
 \section{TCP}
-TCP was most likely used since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on the network interface card reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it. This would of been important at the time these protocols were first used as machines were limited on the amount of processing power and memory available. Also the reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
+TCP was is the most commonly used protocol, since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on hardware; reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it.
 
-\section{SCTP}
-Another transport layer protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other.
+This in-built reliability would of been important at the time most of these protocols where created, since machines at that time were limited on the amount of processing power and memory available. The reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
 
-SCTP seems like a suitable improvement over TCP, however it has drawbacks. Mainly it's limited adoption. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices.
+TCP is still the most used protocol because of the in-built features, meaning that developers of programs do not need to worry about implementing their own error checking. Because of the widespread use it also guaranties device support, meaning greater compatibility.
 
 \section{UDP}
-A modern solution that uses UDP for the transport layer; could be created to allow for less network overhead resulting in more bandwidth being available for other network activity and possibly less latency for a file synchronisation protocol.
+Another protocol that was standardised before TCP was UDP. Unlike TCP, UDP is a less complex protocol since it is connectionless, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling.
 
-Since most modern networks now have little to no packet loss due to more modern network technology being used such as a switch; eliminating packet collisions, having TCP acknowledgements for every packet is wasteful and could increase the latency, due to the constant pausing for acknowledgements.
+This would make UDP on it's own is unsuitable for any reliable communication. Meaning early use-cases were for real-time video/audio streaming and games, TCP is unsuited for this task since it can cause long delay from waiting for acknowledgements and resends.
 
-Compared to TCP, UDP is a less complex protocol since it is connectionless, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling.
+This would seem to make UDP unsuitable for any reliable communication. However protocols can be built on top of UDP to implement reliability.
 
-This would UDP on it's own is unsuitable for any reliable communication. However a application layer protocol can be built on top of UDP to implement reliability. For this investigation it is very important to have a reliable connection, meaning the application must implement this.
+A modern protocol that has widespread use today is QUIC. It is built on top of UDP, providing all the necessary reliability features in the application layer. It is designed to have improved performance over TCP. Currently it is most used for serving website content over http/3 which uses QUIC.
+
+UDP is also used in VPN protocols such as WireGuard and OpenVPN. These also have reliability built-in allowing for low latency access of remote networks.
+
+Using UDP for reliable applications is possible since most networks have limited packet loss, due to more modern network technology being used such as switches; eliminating packet collisions.
+
+It is now common for newer protocols being built using UDP since it is wasteful having TCP acknowledgements for every packet increases the latency, due to the constant pausing for acknowledgements.
 
 Despite UDP having no form of error correction, it does have a single checksum field in the header. Depending on the situation it can even be disabled. This checksum is usually only validates the headers are not corrupted leaving the payload to possibly have been corrupted. An under-used part of the specification is to enable the checksum to include the payload as well, meaning that the whole packet could be validated and ignored if corruption occurred.
 
@@ -24,3 +29,13 @@ Using the checksum field for payload validation allows for corruption to be dete
 The rest of the reliability could just be a reimplementation of TCP, however that would not improve over what already exists, as TCP could just of been used. Instead a custom solution built specifically for the task can be built.
 
 As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
+
+\section{SCTP}
+A more modern protocol already exists, bringing improvements over TCP's drawbacks. This protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other.
+
+SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted.
+
+This limited supports means that it is currently unsuited for use, until more devices have support and the protocol is fully standardised and supported by more network devices.
+
+\section{Conclusion}
+It seems like the suitable way of implementing an improved file synchronisation/transfer protocol is by using UDP and building a custom reliability features specific for the application in the application layer. There will be many ways that the reliability can be implemented and these will be investigated during prototyping.
