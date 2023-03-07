@@ -1,15 +1,26 @@
 After looking into most of the existing solutions that are publicly available all of them are using TCP for the transport layer.
 
+\section{TCP}
 TCP was most likely used since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on the network interface card reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it. This would of been important at the time these protocols were first used as machines were limited on the amount of processing power and memory available. Also the reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
 
+\section{SCTP}
 Another transport layer protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other.
 
 SCTP seems like a suitable improvement over TCP, however it has drawbacks. Mainly it's limited adoption. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices.
 
-I believe a modern solution that uses UDP for the transport layer protocol; could be created to allow for less network overhead resulting in more bandwidth being available for other network activity.
+\section{UDP}
+A modern solution that uses UDP for the transport layer; could be created to allow for less network overhead resulting in more bandwidth being available for other network activity and possibly less latency for a file synchronisation protocol.
 
-Since most modern networks now have little to no packet loss due to more modern network technology being used such as a switch; eliminating packet collisions, having TCP acknowledgements for every packet is wasteful and could increase the latency, due to the constant pausing.
+Since most modern networks now have little to no packet loss due to more modern network technology being used such as a switch; eliminating packet collisions, having TCP acknowledgements for every packet is wasteful and could increase the latency, due to the constant pausing for acknowledgements.
 
-Compared to TCP, UDP is a simpler protocol since there is no checking for lost or out of order packets. It also is a connectionless protocol meaning that there is no handshake to initiate a connection. The lack of these features means it is up to the application layer to implement (or not). Since the project is transferring files across a network, it will be important to have error checking; however there is more freedom to how it can be implemented since there is no existing error checking.
+Compared to TCP, UDP is a less complex protocol since it is connectionless, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling.
 
-A underused part of the UDP protocol is the checksum field, which is generally used to provide a checksum against the UDP headers. However the specification also allows for the payload to also be included, which will allow for packet corruption to be detected directly via the NIC instead of implementing a application level one. This would allow a packet to be discarded before it even reaches the app, meaning only lost and out-of-order packets would need to be handled.
+This would UDP on it's own is unsuitable for any reliable communication. However a application layer protocol can be built on top of UDP to implement reliability. For this investigation it is very important to have a reliable connection, meaning the application must implement this.
+
+Despite UDP having no form of error correction, it does have a single checksum field in the header. Depending on the situation it can even be disabled. This checksum is usually only validates the headers are not corrupted leaving the payload to possibly have been corrupted. An under-used part of the specification is to enable the checksum to include the payload as well, meaning that the whole packet could be validated and ignored if corruption occurred.
+
+Using the checksum field for payload validation allows for corruption to be detected directly via hardware such as the NIC instead of implementing a application level one. This would allow a packet to be discarded before it even reaches the app. Removing the need to check for corruption at the application layer reduces the amount of possible scenarios to handle. Most UDP applications that need to be reliable would need to handle packet loss, reordering and duplication.
+
+The rest of the reliability could just be a reimplementation of TCP, however that would not improve over what already exists, as TCP could just of been used. Instead a custom solution built specifically for the task can be built.
+
+As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
