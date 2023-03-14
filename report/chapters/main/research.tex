@@ -45,8 +45,14 @@ It seems like the suitable way of implementing an improved file synchronisation/
 \section{Data Format}
 Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload.
 
+\subsection*{JSON}
 JSON is the most common format seen in web based technologies, however it would be unsuitable for a protocol; since it requires all data to be encoded as ASCII so any binary data would have to be encoded for example using base64. This extra encoding step would increase both complexity and the required processing power needed to handle each packet.
 
-MessagePack is also another format that could be used, it is more suitable for a protocol since it is encoded directly into binary, also removing the need to encode binary data as this data can be stored directly as a bytes type. However like JSON is unstructured. So extra validation would have to occur when checking validity of a message.
+\subsection*{MessagePack}
+MessagePack (or CBOR) is also another format that could be used, it is more suitable for a protocol since it is encoded directly into binary, also removing the need to encode binary data as this data can be stored directly as a bytes type. However like JSON it is also schema-less. So extra validation would have to occur when checking validity of a message.
 
-A newer format is protobuf. This format is designed specifically for serializing structured data, meaning validation of a message can be checked easily, since the expected format is known from the created definitions.
+\subsection*{Protocol Buffers}
+A newer format is protobuf. This format is designed specifically for serializing structured data using pre-defined schemas, meaning validation of a message can be checked easily, since the expected format is known from the created schemas. Having a required schema makes it more suitable for use for serializing data since a protocols are pre-defined. Like MessagePack it is also a "binary wire" format making the serialized result as small as possible.
+
+\subsection*{Conclusion}
+After investing possible ways of formatting data to send as a payload for network packets. Protocol Buffers seem suitable for this project, as they require schemas to be defined and do not require extra serialization steps when sending binary data.
