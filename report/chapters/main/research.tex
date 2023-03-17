@@ -2,14 +2,14 @@
 After investigating existing solutions, they are all based on using TCP for the transport layer. However this may not be the best method since modern technology can be used since these protocols were created.
 
 \subsection*{TCP}
-TCP was is the most commonly used protocol, since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on hardware; reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it.
+TCP was is the most commonly used protocol, since it allows for detection of lost packets and handling of out of order packets. All of this is done directly on hardware; reducing the amount of processing powered required on a physical machine and removing the need for an application to implement it \parencite{tcp-rfc793}.
 
 This in-built reliability would of been important at the time most of these protocols where created, since machines at that time were limited on the amount of processing power and memory available. The reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
 
 TCP is still the most used protocol because of the in-built features, meaning that developers of programs do not need to worry about implementing their own error checking. Because of the widespread use it also guaranties device support, meaning greater compatibility.
 
 \subsection*{UDP}
-Another protocol that was standardised before TCP was UDP. Unlike TCP, UDP is a less complex protocol since it is connectionless, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling.
+Another protocol that was standardised before TCP was UDP. Unlike TCP, UDP is a less complex protocol since it is connectionless, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling \parencite{udp-rfc768}.
 
 This would make UDP on it's own is unsuitable for any reliable communication. Meaning early use-cases were for real-time video/audio streaming and games, TCP is unsuited for this task since it can cause long delay from waiting for acknowledgements and resends.
 
@@ -32,7 +32,7 @@ The rest of the reliability could just be a reimplementation of TCP, however tha
 As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
 
 \subsection*{SCTP}
-A more modern protocol already exists, bringing improvements over TCP's drawbacks. This protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other.
+A more modern protocol already exists, bringing improvements over TCP's drawbacks. This protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260}.
 
 SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted.
 
@@ -46,13 +46,13 @@ It seems like the suitable way of implementing an improved file synchronisation/
 Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload.
 
 \subsection*{JSON}
-JSON is the most common format seen in web based technologies, however it would be unsuitable for a protocol; since it requires all data to be encoded as ASCII so any binary data would have to be encoded for example using base64. This extra encoding step would increase both complexity and the required processing power needed to handle each packet.
+JSON is the most common format seen in web based technologies, however it would be unsuitable for a protocol; since it requires all data to be encoded as ASCII so any binary data would have to be encoded for example using base64. This extra encoding step would increase both complexity and the required processing power needed to handle each packet \parencite{json-rfc8259}.
 
 \subsection*{MessagePack}
-MessagePack (or CBOR) is also another format that could be used, it is more suitable for a protocol since it is encoded directly into binary, also removing the need to encode binary data as this data can be stored directly as a bytes type. However like JSON it is also schema-less. So extra validation would have to occur when checking validity of a message.
+MessagePack (or CBOR) is also another format that could be used, it is more suitable for a protocol since it is encoded directly into binary, also removing the need to encode binary data as this data can be stored directly as a bytes type. However like JSON it is also schema-less. So extra validation would have to occur when checking validity of a message \parencite{msgpack} \parencite{cbor-rfc8949}.
 
 \subsection*{Protocol Buffers}
-A newer format is protobuf. This format is designed specifically for serializing structured data using pre-defined schemas, meaning validation of a message can be checked easily, since the expected format is known from the created schemas. Having a required schema makes it more suitable for use for serializing data since a protocols are pre-defined. Like MessagePack it is also a "binary wire" format making the serialized result as small as possible.
+A newer format is protobuf. This format is designed specifically for serializing structured data using pre-defined schemas, meaning validation of a message can be checked easily, since the expected format is known from the created schemas. Having a required schema makes it more suitable for use for serializing data since a protocols are pre-defined. Like MessagePack it is also a "binary wire" format making the serialized result as small as possible \parencite{protobuf-3}.
 
 \subsection*{Conclusion}
 After investing possible ways of formatting data to send as a payload for network packets. Protocol Buffers seem suitable for this project, as they require schemas to be defined and do not require extra serialization steps when sending binary data.
