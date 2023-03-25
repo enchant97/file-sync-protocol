@@ -32,7 +32,7 @@ This in-built reliability would of been important at the time most of these prot
 TCP is still the most used protocol because of the in-built features, meaning that developers of programs do not need to worry about implementing their own error checking. Because of the widespread use it also guaranties device support, meaning greater compatibility.
 
 \subsection*{SCTP}
-A more modern protocol already exists, bringing improvements over TCP's and UDP's drawbacks. This protocol is SCTP (Stream Control Transmission Protocol). It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260}.
+There are many modern protocols being developed, one of these is SCTP (Stream Control Transmission Protocol). Which is meant to improve on the TCP and UDP drawbacks. It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260}.
 
 SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted or malicious.
 
@@ -44,6 +44,9 @@ It seems like the suitable way of implementing an improved file synchronisation/
 
 \section{Data Format}
 Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload.
+
+\subsection*{Telnet Strings}
+Using plain ASCII text for messages; would allow the protocol to work on archaic devices. However modern devices are being targeted, making this format unsuitable since it would increase the amount of network overhead required for sending ASCII messages. It would also not have a way of easily representing structured data.
 
 \subsection*{JSON}
 JSON is the most common format seen in web based technologies, however it would be unsuitable for a protocol; since it requires all data to be encoded as ASCII so any binary data would have to be encoded for example using base64. This extra encoding step would increase both complexity and the required processing power needed to handle each packet \parencite{json-rfc8259}.
