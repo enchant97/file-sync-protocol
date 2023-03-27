@@ -22,6 +22,18 @@ Command messages are exchanged using telnet strings, meaning they require no ser
 FTP has several ways data may be sent, the two main data types are the "Type A" and "Type I". The first uses data sent as ASCII characters making it unsuitable for binary data, the second data type uses bytes making it suitable for sending binary data.
 
 \subsection*{SMB2}
+SMB2 is the next protocol to be investigated, it has been selected as it is used in local networks by both business and home users.
+
+Like FTP it also utilises TCP for it's communication however, unlike FTP it uses only a single port since it takes advantage of TCP's full-duplex capability.
+
+A SMB2 packet is more complex than FTP, each packet has a header that uses bytes with padding to represent each field. This machine-readable format is structured meaning the packet will always have the same fields and order, making it simpler to process the packet. As well as being easier to process, it can also contain a lot more information with less overhead; since ASCII characters are not being used which would require eight bytes for each character.
+
+This protocol however differs from FTP as it requires more messages to be exchanged before any read/write commands can be issued. A standard SMB2 connection requires three messages to be exchanged before read/write commands. Then a further two messages to end the connection. On a high latency network or when being used on a VPN, this can create a high amount of wait time; thus making unsuitable for real-time file synchronisation.
+
+% INSERT: SMB2 Connection Diagram
+
+SMB2 like the previous version (SMB1) transfers data using blocks, however unlike SMB1 it now has a flexible block size to increase transfer performance. This block level transfer is similar to FTP's block mode. Using blocks will increase latency due to extra negotiation overhead needed for every block sent and received as well as the TCP acknowledgements. SMB2 however does support pipelining allowing for extra requests to be sent before one has been received, this likely reduces the wait time in total.
+
 \subsection*{rsync}
 \subsection*{SyncThing}
 
