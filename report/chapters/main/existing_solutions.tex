@@ -4,10 +4,9 @@ To compare the prototypes against, a range of existing solutions need to be firs
 There are many solutions that have been created to transfer files. Listed below are the solutions that will be compared:
 
 \begin{itemize}
-	\item SMB2
     \item FTP
+	\item SMB2
 	\item rsync
-	\item SyncThing
 \end{itemize}
 
 
@@ -35,7 +34,17 @@ This protocol however differs from FTP as it requires more messages to be exchan
 SMB2 like the previous version (SMB1) transfers data using blocks, however unlike SMB1 it now has a flexible block size to increase transfer performance. This block level transfer is similar to FTP's block mode. Using blocks will increase latency due to extra negotiation overhead needed for every block sent and received as well as the TCP acknowledgements. SMB2 however does support pipelining allowing for extra requests to be sent before one has been received, this likely reduces the wait time in total.
 
 \subsection*{rsync}
-\subsection*{SyncThing}
+Rsync is the last protocol that has been selected as it is used in both home and business environments. Compared to the other protocols that have been investigated; it's main feature is synchronisation of file data \parencite{rsync-samba}.
+
+The rsync application is made to work over other protocols such as ssh, however has it's own native TCP implementation which will be investigated since it removes any extra complexities for testing.
+
+The rsync protocol starts a connection in a very minimal way only exchanging a initialisation message, which contains the version number of the protocol and what the supported hashing methods are available. This is very different to the other protocols such as SMB2 which has a complex handshake before any actual transfer can begin.
+
+An rsync transfer between two devices (A and B) works by having "B" splitting each file to synchronise into non-overlapping fixed-sized blocks. Then two checksums are created for each block, one using a rolling algorithm and the other using a md4 hash. These checksums are then sent to "A", "A" then searches through the checksums finding matching ones. "A" then sends "B" instructions on how to construct a copy of the file. Each instruction will either be a reference to one of "B's" checksums or raw data if no matching ones are found \parencite{tridgell1996rsync}.
+
+% INSERT: rsync diagram
+
+This protocol would be considered a block-level transfer since rsync is sending file parts in blocks, rather than a constant data stream. Like SMB2; rsync also uses pipelining of requests to reduce the perceived latency on a connection.
 
 
 \section{Testing}
