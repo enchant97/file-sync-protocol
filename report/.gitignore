@@ -8,6 +8,7 @@
 *.toc
 *.lof
 *.lot
+*.lol
 
 # biber
 *.bbl
