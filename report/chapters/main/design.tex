@@ -1,14 +1,79 @@
 As this project is purely an investigation into whether a more modern solution for transferring files can be produced, these prototypes will only focus on the minimum possible required to have functionality. This allows for each prototype to improve on the most important features. These are listed below:
 
 \begin{itemize}
-    \item Error correction
-    \item Sending files from client to server
-    \item Adjustable settings, for testing
-    \item Only support a single client connection
+	\item Error correction
+	\item Sending files from client to server
+	\item Adjustable settings, for testing
+	\item Only support a single client connection
 \end{itemize}
 
 
 \section{Prototype One}
+The first prototype will take inspiration from FTP streaming for file data transfer. Using UDP with this should reduce the total latency for a transfer; since all file data packets can be sent with no interruption for waiting for acknowledgments.
+
+This prototype will use the binary protobuf format for structuring the packet data. This will reduce the amount of required overhead needed for storing structured data. Binary is suited for this prototype since it does not need to be easily human readable since only the software will be directly interacting with the data.
+
+\subsection*{Packet Structure}
+The packets structure will be split into several fields, using flexible offsets meaning the packet size is dynamic. Having a dynamic packet size should reduce the amount of wasted space, leaving more for file data.
+
+A packet will feature two protobuf fields one for the header which will describe what the packet is, and the second will include any extra metadata relevant to a request/response.
+
+A packet's fields will be structured as shown:
+
+\begin{lstlisting}[float,caption=Prototype One Packet Fields]
+| NUM | NAME            | DATA-TYPE |
+|-----|-----------------|-----------|
+| 001 | Type            | uint8     |
+| 002 | Header Length   | uint64    |
+| 003 | Header          | protobuf  |
+| 004 | Metadata Length | uint64    |
+| 005 | Metadata        | protobuf  |
+| 006 | Payload Length  | uint64    |
+| 007 | Payload         | binary    |
+|-----|-----------------|-----------|
+\end{lstlisting}
+
+The first field will take up exactly 1 byte, this field will be used to set the type of the packet. This will determine what protobuf encoded header structure will be. Using 1 byte will allow for 255 possible message types. Since these prototypes will not be a fully implemented solution only a few types will be implemented, which are shown below:
+
+\begin{lstlisting}[float,caption=Prototype One Packet Types]
+| PREFIX | VALUE | NOTE                         |
+|--------|-------|------------------------------|
+| SYN    | 1     | Perform connection handshake |
+| ACK    | 2     | Acknowledge request          |
+| REQ    | 3     | Request to send/receive      |
+| PSH    | 4     | Send payload data            |
+| FIN    | 254   | End connection               |
+|--------|-------|------------------------------|
+\end{lstlisting}
+
+The next field will take up 8 bytes, this will be big-endian ordered number which will say how many bytes of data to expect after for the header (an offset value).
+
+After header length the actual header will follow, if there is no header the next field will immediately follow.
+
+The 4th field will be the metadata length which is the same as the header length, however specifies the length of the metadata field.
+
+The metadata field is the same as the header.
+
+Here is an example of a SYN packet in both a structured view and a hex representation of the binary data:
+
+\begin{lstlisting}[float,caption=Prototype One Example Packet Structure]
+|-------------------|
+| 1                 | <- Packet Type
+| 5                 | <- Header Length
+| {id: 1, mtu: 470} | <- Protobuf Header (JSON representation)
+| 0                 | <- No Metadata
+| 0                 | <- No Payload
+|-------------------|
+\end{lstlisting}
+
+\begin{lstlisting}[float,caption=Prototype One Example Packet Binary]
+ 1 0 0 0 0 0 0 0 5 8 1 16 214 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ ^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
+ |        |             |              |               |
+Type    Header        Header        Metadata        Payload
+        Length                       Length         Length
+\end{lstlisting}
+
 
 \section{Prototype Two}
 
