@@ -32,6 +32,19 @@ The metadata field is the same as the header.
 
 An example of a SYN packet in both a structured view and a hex representation of the binary data is shown in \ref{p1d-example-structure} and \ref{p1d-example-binary}.
 
+\subsection*{Operation}
+For a client to first connect to the server a simple handshake will occur. This has been based on the rsync protocol handshake which only requires one exchange at the start. The client will first send a packet type called "SYN" which includes the clients max receiving MTU size, this allows for the message size to be adjusted depending on the network structure. After the server has received it will acknowledge the handshake and send back it's own "SYN" packet, which will contain it's max supported receiving MTU and a generated client ID. This client ID will be stored at the server until the client disconnects, this will allow for a connection to remain available without the client needing to renegotiate. Because this ID will be used to determine which client is which, each message sent by the client will need this ID attached. Every message from the client following "SYN", must also increment a request ID field, which will allow error checking functionality.
+
+Since UDP is used error handling for missing and out of order packets is needed and for the server to know when the client has received the response from the server. This is already a implemented feature in TCP, so this prototype will be based off how TCP works. Each request message sent from the client will expect a "ACK" packet which will contain the request ID in the header, so the client can handle out-of-order and missing messages. There will a timeout duration for waiting for a "ACK", after the timeout the original message will be sent again. This will repeat until a "ACK" is received.
+
+After a handshake, the client is free to send a request which in this prototype; will either be a request to send a file or ending the connection.
+
+To request to send a file a packet type of "REQ" is sent with the destination file path and file size in the packets metadata field, so the server can work out whether there is enough space to receive the file. The server will reply with an "ACK" and the client will send the file data in a streaming fashion, each packet will be a "PSH" type containing the chunk ID and the request ID. A chunk ID is needed to reconstruct the received data at the server side so it is in the correct order, this ID is simply a incrementing number. The "PSH" packets will not have "ACK" responses from the server, instead validation will happen after the transfer. This has been designed to reduce the latency during a transfer since most networks have little to no packet loss.
+
+Once a transfer is finished the client will send a "REQ" packet containing the last chunk ID. The client will then either receive a "ACK" from the server if no chunks are missing, or a "REQ" packet containing the missing chunks; causing the client to send "PSH" packets containing the missing chunks. This will repeat until a "ACK" is received.
+
+To end a connection, the client will send a "FIN" packet, this will include just the client ID. The server will recognise the request to end and clear the client ID and "ACK" the request.
+
 \FloatBarrier
 
 \begin{lstlisting}[float,caption={Prototype One Packet Fields},label=p1d-packet-fields]
