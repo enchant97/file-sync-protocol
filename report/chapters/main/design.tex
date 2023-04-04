@@ -91,6 +91,17 @@ Type    Header        Header        Metadata        Payload
 
 \FloatBarrier
 
+
 \section{Prototype Two}
+The second prototype will focus on improving the method of sending the chunked data. This is required improvement as in the event of many packets being dropped during a transfer it will not be until the end of the transfer until the lost packets will be recovered.
+
+To solve this without sending and waiting for acknowledgments for each packet (re-implementing TCP) a different method must be implemented.
+
+Since on smaller transfers the number of lost packets to recover from will be less than a larger transfer, grouping several chunks into a block of chunks then verifying each; this could solve this issue.
+
+In prototype one during the end of a transfer only three request types were sent request to send a file, the file data and a verify packet to check if any chunks needed to be resent. In this prototype a new request type has been added for marking the end-of-file (EOF) and ending the file transfer. The request for verification will not end the transfer; instead it is repurposed for checking for missing chunks for the current group. This will reduce the complexity of needing the server to keep a record of the blocks.
+
+The existing protocol packet types, headers and metadata will stay the same as protocol one. To make a comparison of the changes easier. Both the client and server code will need to be altered to handle the new request type and keeping track of how many chunks are sent per block.
+
 
 \section{Prototype Three}
