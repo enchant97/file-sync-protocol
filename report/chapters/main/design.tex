@@ -105,3 +105,62 @@ The existing protocol packet types, headers and metadata will stay the same as p
 
 
 \section{Prototype Three}
+In prototype three which will be the last prototype, will improve on the required overhead for both the message size and required amount of processing.
+
+Firstly the metadata field has been removed, instead opting for using the packet type field to distinguish between different packets. This will remove the need to both serialize and deserialize the two fields, shown in \ref{p3d-packet-fields}.
+
+Secondly the reserved space used for the header length and payload length has been altered. Using a reserved 8 bytes is wasteful as a packet cannot be ~18446 Petabyte in size. Instead this length fields will use uint32, which only requires 4 bytes which will allow for a header or payload to be ~4 Gigabyte in size. This size would allow future use with IPv6 Jumbo-Frames and Jumbograms.
+
+These changes will take the minimum packet size from 25 bytes to 9, which is a lot less network overhead, and allows for more file data to be sent in a single packet without loosing any functionality, shown in \ref{p3d-example-structure} and \ref{p3d-example-binary}.
+
+The next change is splitting packet types into two categories; one for requests and the other for responses. This removes the need for a client to only handle responses and the server to only handle requests, shown in \ref{p3d-packet-types}.
+
+The last change is adding a new field to allow for requests that are related to a previous request to have a unique index. This index will allow the handling for out-of-order and old packets. This is to prevent requests such as "PSH_VAL" and "PSH_EOF" from triggering events multiple times, for example multiple validations may have be triggered before in prototype two due to the request ID's being the same, however the sub request ID can now be validated by the server and either handled or ignored.
+
+\FloatBarrier
+
+\begin{lstlisting}[float,caption={Prototype Three Packet Fields},label=p3d-packet-fields]
+| NUM | NAME           | DATA-TYPE |
+|-----|----------------|-----------|
+| 001 | Type           | uint8     |
+| 002 | Header Length  | uint32    |
+| 003 | Header         | protobuf  |
+| 004 | Payload Length | uint32    |
+| 005 | Payload        | binary    |
+|-----|----------------|-----------|
+\end{lstlisting}
+
+\FloatBarrier
+
+\begin{lstlisting}[float,caption={Prototype Three Packet Types},label=p3d-packet-types]
+| PREFIX 	  | VALUE | NOTE                                 |
+|-------------|-------|--------------------------------------|
+| REQ_SYN     | 1     | Start connection, share capabilities |
+| REQ_FIN 	  | 2     | Finalise connection                  |
+| REQ_PSH     | 10    | Request to send a file               |
+| REQ_PSH_DAT | 11    | Chunk of file data                   |
+| REQ_PSH_VAL | 12    | Request to validate current block    |
+| REQ_PSH_EOF | 13    | Mark EOF, transfer finished          |
+|             |       |                                      |
+| RES_SYN     | 1     | Reply to REQ_SYN, share capabilities |
+| RES_ACK     | 2     | Acknowledge REQ_*                    |
+| RES_ERR_DAT | 10    | Chunk ID's to re-send                |
+|-------------|-------|--------------------------------------|
+\end{lstlisting}
+
+\begin{lstlisting}[float,caption={Prototype Three Example Packet Structure},label=p3d-example-structure]
+|-------------------|
+| 1                 | <- Packet Type
+| 5                 | <- Header Length
+| {id: 1, mtu: 470} | <- Protobuf Header (JSON representation)
+| 0                 | <- Payload Length (No Payload)
+|-------------------|
+\end{lstlisting}
+
+\begin{lstlisting}[float,caption={Prototype Three Example Packet Binary},label=p3d-example-binary]
+ 1    0 0 0 5    8 1 16 214 3    0 0 0 0
+ ^    ^^^^^^^    ^^^^^^^^^^^^
+ |       |            |            |
+Type   Header       Header       Payload
+       Length                    Length
+\end{lstlisting}
