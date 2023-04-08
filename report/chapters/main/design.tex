@@ -115,7 +115,7 @@ These changes will take the minimum packet size from 25 bytes to 9, which is a l
 
 The next change is splitting packet types into two categories; one for requests and the other for responses. This removes the need for a client to only handle responses and the server to only handle requests, shown in \ref{p3d-packet-types}.
 
-The last change is adding a new field to allow for requests that are related to a previous request to have a unique index. This index will allow the handling for out-of-order and old packets. This is to prevent requests such as "PSH_VAL" and "PSH_EOF" from triggering events multiple times, for example multiple validations may have be triggered before in prototype two due to the request ID's being the same, however the sub request ID can now be validated by the server and either handled or ignored.
+The last change is adding a new field to allow for requests that are related to a previous request to have a unique index. This index will allow the handling for out-of-order and old packets. This is to prevent requests such as "PSH\_VAL" and "PSH\_EOF" from triggering events multiple times, for example multiple validations may have be triggered before in prototype two due to the request ID's being the same, however the sub request ID can now be validated by the server and either handled or ignored.
 
 \FloatBarrier
 
