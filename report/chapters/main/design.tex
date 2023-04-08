@@ -18,9 +18,9 @@ The packets structure will be split into several fields, using flexible offsets 
 
 A packet will feature two protobuf fields one for the header which will describe what the packet is, and the second will include any extra metadata relevant to a request/response.
 
-A packet's fields will be structured as shown in \ref{p1d-packet-fields}.
+A packet's fields will be structured as shown in Table~\ref{tab:p1d-packet-fields}.
 
-The first field will take up exactly 1 byte, this field will be used to set the type of the packet. This will determine what protobuf encoded header structure will be. Using 1 byte will allow for 255 possible message types. Since these prototypes will not be a fully implemented solution only a few types will be implemented, which are shown in \ref{p1d-packet-types}.
+The first field will take up exactly 1 byte, this field will be used to set the type of the packet. This will determine what protobuf encoded header structure will be. Using 1 byte will allow for 255 possible message types. Since these prototypes will not be a fully implemented solution only a few types will be implemented, which are shown in Table~\ref{tab:p1d-packet-types}.
 
 The next field will take up 8 bytes, this will be big-endian ordered number which will say how many bytes of data to expect after for the header (an offset value).
 
@@ -30,7 +30,7 @@ The 4th field will be the metadata length which is the same as the header length
 
 The metadata field is the same as the header.
 
-An example of a SYN packet in both a structured view and a hex representation of the binary data is shown in \ref{p1d-example-structure} and \ref{p1d-example-binary}.
+An example of a SYN packet in both a structured view and a hex representation of the binary data is shown in Listing~\ref{lst:p1d-example-structure} and Listing~\ref{lst:p1d-example-binary}.
 
 \subsection*{Operation}
 For a client to first connect to the server a simple handshake will occur. This has been based on the rsync protocol handshake which only requires one exchange at the start. The client will first send a packet type called "SYN" which includes the clients max receiving MTU size, this allows for the message size to be adjusted depending on the network structure. After the server has received it will acknowledge the handshake and send back it's own "SYN" packet, which will contain it's max supported receiving MTU and a generated client ID. This client ID will be stored at the server until the client disconnects, this will allow for a connection to remain available without the client needing to renegotiate. Because this ID will be used to determine which client is which, each message sent by the client will need this ID attached. Every message from the client following "SYN", must also increment a request ID field, which will allow error checking functionality.
@@ -47,31 +47,53 @@ To end a connection, the client will send a "FIN" packet, this will include just
 
 \FloatBarrier
 
-\begin{lstlisting}[float,caption={Prototype One Packet Fields},label=p1d-packet-fields]
-| NUM | NAME            | DATA-TYPE |
-|-----|-----------------|-----------|
-| 001 | Type            | uint8     |
-| 002 | Header Length   | uint64    |
-| 003 | Header          | protobuf  |
-| 004 | Metadata Length | uint64    |
-| 005 | Metadata        | protobuf  |
-| 006 | Payload Length  | uint64    |
-| 007 | Payload         | binary    |
-|-----|-----------------|-----------|
-\end{lstlisting}
+\begin{table}[ht]
+	\caption{Prototype One Packet Fields}
+	\label{tab:p1d-packet-fields}
+	\centering
+	\begin{tabular}{ l l l }
+		\hline
+		\textbf{Num} & \textbf{Name}   & \textbf{Data-Type} \\
+		\hline
+		001          & Type            & uint8              \\
+		\hline
+		002          & Header Length   & uint64             \\
+		\hline
+		003          & Header          & protobuf           \\
+		\hline
+		004          & Metadata Length & uint64             \\
+		\hline
+		005          & Metadata        & protobuf           \\
+		\hline
+		006          & Payload Length  & uint64             \\
+		\hline
+		007          & Payload         & binary             \\
+		\hline
+	\end{tabular}
+\end{table}
 
-\begin{lstlisting}[float,caption={Prototype One Packet Types},label=p1d-packet-types]
-| PREFIX | VALUE | NOTE                         |
-|--------|-------|------------------------------|
-| SYN    | 1     | Perform connection handshake |
-| ACK    | 2     | Acknowledge request          |
-| REQ    | 3     | Request to send/receive      |
-| PSH    | 4     | Send payload data            |
-| FIN    | 254   | End connection               |
-|--------|-------|------------------------------|
-\end{lstlisting}
+\begin{table}[ht]
+	\caption{Prototype One Packet Types}
+	\label{tab:p1d-packet-types}
+	\centering
+	\begin{tabular}{ l l l }
+		\hline
+		\textbf{Prefix} & \textbf{Value} & \textbf{Note}                \\
+		\hline
+		SYN             & 1              & Perform connection handshake \\
+		\hline
+		ACK             & 2              & Acknowledge request          \\
+		\hline
+		REQ             & 3              & Request to send/receive      \\
+		\hline
+		PSH             & 4              & Send payload data            \\
+		\hline
+		FIN             & 254            & End connection               \\
+		\hline
+	\end{tabular}
+\end{table}
 
-\begin{lstlisting}[float,caption={Prototype One Example Packet Structure},label=p1d-example-structure]
+\begin{lstlisting}[float,caption={Prototype One Example Packet Structure},label=lst:p1d-example-structure]
 |-------------------|
 | 1                 | <- Packet Type
 | 5                 | <- Header Length
@@ -81,7 +103,7 @@ To end a connection, the client will send a "FIN" packet, this will include just
 |-------------------|
 \end{lstlisting}
 
-\begin{lstlisting}[float,caption={Prototype One Example Packet Binary},label=p1d-example-binary]
+\begin{lstlisting}[float,caption={Prototype One Example Packet Binary},label=lst:p1d-example-binary]
  1 0 0 0 0 0 0 0 5 8 1 16 214 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  ^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
  |        |             |              |               |
@@ -107,48 +129,71 @@ The existing protocol packet types, headers and metadata will stay the same as p
 \section{Prototype Three}
 In prototype three which will be the last prototype, will improve on the required overhead for both the message size and required amount of processing.
 
-Firstly the metadata field has been removed, instead opting for using the packet type field to distinguish between different packets. This will remove the need to both serialize and deserialize the two fields, shown in \ref{p3d-packet-fields}.
+Firstly the metadata field has been removed, instead opting for using the packet type field to distinguish between different packets. This will remove the need to both serialize and deserialize the two fields, shown in Table~\ref{tab:p3d-packet-fields}.
 
 Secondly the reserved space used for the header length and payload length has been altered. Using a reserved 8 bytes is wasteful as a packet cannot be ~18446 Petabyte in size. Instead this length fields will use uint32, which only requires 4 bytes which will allow for a header or payload to be ~4 Gigabyte in size. This size would allow future use with IPv6 Jumbo-Frames and Jumbograms.
 
-These changes will take the minimum packet size from 25 bytes to 9, which is a lot less network overhead, and allows for more file data to be sent in a single packet without loosing any functionality, shown in \ref{p3d-example-structure} and \ref{p3d-example-binary}.
+These changes will take the minimum packet size from 25 bytes to 9, which is a lot less network overhead, and allows for more file data to be sent in a single packet without loosing any functionality, shown in Listing~\ref{lst:p3d-example-structure} and Listing~\ref{lst:p3d-example-binary}.
 
-The next change is splitting packet types into two categories; one for requests and the other for responses. This removes the need for a client to only handle responses and the server to only handle requests, shown in \ref{p3d-packet-types}.
+The next change is splitting packet types into two categories; one for requests and the other for responses. This removes the need for a client to only handle responses and the server to only handle requests, shown in Table~\ref{tab:p3d-packet-types}.
 
 The last change is adding a new field to allow for requests that are related to a previous request to have a unique index. This index will allow the handling for out-of-order and old packets. This is to prevent requests such as "PSH\_VAL" and "PSH\_EOF" from triggering events multiple times, for example multiple validations may have be triggered before in prototype two due to the request ID's being the same, however the sub request ID can now be validated by the server and either handled or ignored.
 
 \FloatBarrier
 
-\begin{lstlisting}[float,caption={Prototype Three Packet Fields},label=p3d-packet-fields]
-| NUM | NAME           | DATA-TYPE |
-|-----|----------------|-----------|
-| 001 | Type           | uint8     |
-| 002 | Header Length  | uint32    |
-| 003 | Header         | protobuf  |
-| 004 | Payload Length | uint32    |
-| 005 | Payload        | binary    |
-|-----|----------------|-----------|
-\end{lstlisting}
+\begin{table}[ht]
+	\caption{Prototype Three Packet Fields}
+	\label{tab:p3d-packet-fields}
+	\centering
+	\begin{tabular}{ l l l }
+		\hline
+		\textbf{Num} & \textbf{Name}  & \textbf{Data-Type} \\
+		\hline
+		001          & Type           & uint8              \\
+		\hline
+		002          & Header Length  & uint32             \\
+		\hline
+		003          & Header         & protobuf           \\
+		\hline
+		004          & Payload Length & uint32             \\
+		\hline
+		005          & Payload        & binary             \\
+		\hline
+	\end{tabular}
+\end{table}
 
 \FloatBarrier
 
-\begin{lstlisting}[float,caption={Prototype Three Packet Types},label=p3d-packet-types]
-| PREFIX 	  | VALUE | NOTE                                 |
-|-------------|-------|--------------------------------------|
-| REQ_SYN     | 1     | Start connection, share capabilities |
-| REQ_FIN 	  | 2     | Finalise connection                  |
-| REQ_PSH     | 10    | Request to send a file               |
-| REQ_PSH_DAT | 11    | Chunk of file data                   |
-| REQ_PSH_VAL | 12    | Request to validate current block    |
-| REQ_PSH_EOF | 13    | Mark EOF, transfer finished          |
-|             |       |                                      |
-| RES_SYN     | 1     | Reply to REQ_SYN, share capabilities |
-| RES_ACK     | 2     | Acknowledge REQ_*                    |
-| RES_ERR_DAT | 10    | Chunk ID's to re-send                |
-|-------------|-------|--------------------------------------|
-\end{lstlisting}
+\begin{table}[ht]
+	\caption{Prototype Three Packet Types}
+	\label{tab:p3d-packet-types}
+	\centering
+	\begin{tabular}{ l l l }
+		\hline
+		\textbf{Prefix} & \textbf{Value} & \textbf{Note}                        \\
+		\hline
+		REQ\_SYN         & 1              & Start connection, share capabilities \\
+		\hline
+		REQ\_FIN         & 2              & Finalise connection                  \\
+		\hline
+		REQ\_PSH         & 10             & Request to send a file               \\
+		\hline
+		REQ\_PSH\_DAT     & 11             & Chunk of file data                   \\
+		\hline
+		REQ\_PSH\_VAL     & 12             & Request to validate current block    \\
+		\hline
+		REQ\_PSH\_EOF     & 13             & Mark EOF, transfer finished          \\
+		\hline
+		RES\_SYN         & 1              & Reply to REQ\_SYN, share capabilities \\
+		\hline
+		RES\_ACK         & 2              & Acknowledge REQ\_*                    \\
+		\hline
+		RES\_ERR\_DAT     & 10             & Chunk ID's to re-send                \\
+		\hline
+	\end{tabular}
+\end{table}
 
-\begin{lstlisting}[float,caption={Prototype Three Example Packet Structure},label=p3d-example-structure]
+\begin{lstlisting}[float,caption={Prototype Three Example Packet Structure},label=lst:p3d-example-structure]
 |-------------------|
 | 1                 | <- Packet Type
 | 5                 | <- Header Length
@@ -157,7 +202,7 @@ The last change is adding a new field to allow for requests that are related to 
 |-------------------|
 \end{lstlisting}
 
-\begin{lstlisting}[float,caption={Prototype Three Example Packet Binary},label=p3d-example-binary]
+\begin{lstlisting}[float,caption={Prototype Three Example Packet Binary},label=lst:p3d-example-binary]
  1    0 0 0 5    8 1 16 214 3    0 0 0 0
  ^    ^^^^^^^    ^^^^^^^^^^^^
  |       |            |            |
