@@ -4,7 +4,7 @@ To compare the prototypes against, a range of existing solutions need to be firs
 There are many solutions that have been created to transfer files. Listed below are the solutions that will be compared:
 
 \begin{itemize}
-    \item FTP
+	\item FTP
 	\item SMB2
 	\item rsync
 \end{itemize}
@@ -48,4 +48,73 @@ This protocol would be considered a block-level transfer since rsync is sending 
 
 
 \section{Testing}
+
+Testing will be carried out using isolated networks in Docker to remove any outside interference. The Table~\ref{tab:file-types-used-for-testing} shows what types of files will be used for each test.
+
+\begin{table}[h!]
+	\caption{File Types Used For Testing}
+	\label{tab:file-types-used-for-testing}
+	\centering
+	\begin{tabular}{ l l l }
+		\hline
+		\textbf{Type} & \textbf{Total Bytes} & \textbf{File Count} \\
+		\hline
+		Single        & 2,000,000            & 1                   \\
+		\hline
+		Text          & 72,754               & 15                  \\
+		\hline
+		Photos        & 67,241,693           & 15                  \\
+		\hline
+		1KB Random    & 512,000              & 500                 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+	\caption{Existing Protocols Test Results}
+	\label{tab:existing-protocols-test-results}
+	\centering
+	\begin{tabular}{l l l l l}
+		\textbf{Single}     &                      &                        &                         &                      \\
+		\textbf{}           & \textbf{Total Bytes} & \textbf{Total Packets} & \textbf{Overhead Bytes} & \textbf{Overhead \%} \\
+		\hline
+		\textbf{FTP}        & 2,015,995            & 188                    & 15,995                  & 0.79\%               \\
+		\hline
+		\textbf{SMB}        & 2,085,086            & 444                    & 85,086                  & 4.08\%               \\
+		\hline
+		\textbf{RSYNC}      & 2,014,762            & 212                    & 14,762                  & 0.73\%               \\
+		\hline
+		                    &                      &                        &                         &                      \\
+		\textbf{Text}       &                      &                        &                         &                      \\
+		\textbf{}           & \textbf{Total Bytes} & \textbf{Total Packets} & \textbf{Overhead Bytes} & \textbf{Overhead \%} \\
+		\hline
+		\textbf{FTP}        & 136,196              & 661                    & 63,442                  & 46.58\%              \\
+		\hline
+		\textbf{SMB}        & 258,901              & 944                    & 186,147                 & 71.90\%              \\
+		\hline
+		\textbf{RSYNC}      & 77,101               & 42                     & 4,347                   & 5.64\%               \\
+		\hline
+		                    &                      &                        &                         &                      \\
+		\textbf{Photos}     &                      &                        &                         &                      \\
+		\textbf{}           & \textbf{Total Bytes} & \textbf{Total Packets} & \textbf{Overhead Bytes} & \textbf{Overhead \%} \\
+		\hline
+		\textbf{FTP}        & 67,481,283           & 3,332                  & 239,590                 & 0.36\%               \\
+		\hline
+		\textbf{SMB}        & 67,579,552           & 2,966                  & 337,859                 & 0.50\%               \\
+		\hline
+		\textbf{RSYNC}      & 67,471,457           & 3,212                  & 229,764                 & 0.34\%               \\
+		\hline
+		                    &                      &                        &                         &                      \\
+		\textbf{1KB Random} &                      &                        &                         &                      \\
+		\textbf{}           & \textbf{Total Bytes} & \textbf{Total Packets} & \textbf{Overhead Bytes} & \textbf{Overhead \%} \\
+		\hline
+		\textbf{FTP}        & 15,275,292           & 23,150                 & 14,763,292              & 96.65\%              \\
+		\hline
+		\textbf{SMB}        & 3,009,107            & 11,407                 & 2,497,107               & 82.98\%              \\
+		\hline
+		\textbf{RSYNC}      & 571,065              & 69                     & 59,065                  & 10.34\%              \\
+		\hline
+	\end{tabular}
+\end{table}
+
 \section{Comparison}
