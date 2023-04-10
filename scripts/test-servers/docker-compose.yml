@@ -6,7 +6,9 @@ networks:
     internal: true
   samba:
     internal: true
-  syncthing:
+  # syncthing:
+  #   internal: true
+  ftp:
     internal: true
 
 services:
@@ -30,12 +32,23 @@ services:
     tmpfs:
       - /share
 
-  syncthing:
-    image: syncthing/syncthing
-    container_name: syncthing
+  # syncthing:
+  #   image: syncthing/syncthing
+  #   container_name: syncthing
+  #   networks:
+  #     - syncthing
+  #   # volumes:
+  #   #   - ./share:/var/syncthing/Sync/
+  #   tmpfs:
+  #     - /var/syncthing/Sync/
+
+  ftp:
+    image: garethflowers/ftp-server:0.5
+    container_name: ftp
+    environment:
+      - FTP_USER=user
+      - FTP_PASS=user
     networks:
-      - syncthing
-    # volumes:
-    #   - ./share:/var/syncthing/Sync/
+      - ftp
     tmpfs:
-      - /var/syncthing/Sync/
+      - /home/user
