@@ -48,8 +48,11 @@ This protocol would be considered a block-level transfer since rsync is sending 
 
 
 \section{Testing}
+To test these protocols, a suitable testing environment will need to be setup. It will need to ensure that the tests can be repeated and give the same results. For this a virtualised network can be used to remove any outside interference. Creating containers using Docker will be used to provide this isolation, Docker features both virtual networking and the ability to create disposable containers that will operate the same independently of the underlying operating system.
 
-Testing will be carried out using isolated networks in Docker to remove any outside interference. The Table~\ref{tab:file-types-used-for-testing} shows what types of files will be used for each test.
+As well as the environment, to provide accurate results to allow comparisons; multiple different types of files should be tested. In the Table~\ref{tab:file-types-used-for-testing}. The tests will use a mixture of real and synthetic data, which will keep the tests to as real life as possible.
+
+There are many possible data points that can be collected however only the most relevant ones will be collected. These tests will collect the total bytes and total packets sent for a each test. This will allow the total amount of overhead (extra data other than the physical file) to the calculated. Being able to calculate the amount of overhead is important as it will allow the comparison of how much extra data is being transferred.
 
 \begin{table}[h!]
 	\caption{File Types Used For Testing}
@@ -116,5 +119,7 @@ Testing will be carried out using isolated networks in Docker to remove any outs
 		\hline
 	\end{tabular}
 \end{table}
+
+\FloatBarrier
 
 \section{Comparison}
