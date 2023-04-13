@@ -53,11 +53,21 @@ As well as the environment, to provide accurate results to allow comparisons; mu
 There are many possible data points that can be collected however only the most relevant ones will be collected. These tests will collect the total bytes and total packets sent for a each test. This will allow the total amount of overhead (extra data other than the physical file) to the calculated. Being able to calculate the amount of overhead is important as it will allow the comparison of how much extra data is being transferred.
 
 \begin{table}[h!]
+	\caption{Test System Specs}
+	\label{tab:test-system-specs}
+	\begin{tabular}{ l | l | }
+		\textbf{Operating System} & Arch (Linux 6.2.10)      \\
+		\textbf{CPU}              & AMD Ryzen 5 5600X 4.6GHz \\
+		\textbf{Ram}              & DDR4 3200 32GB           \\
+		\textbf{Storage}          & 240GB SATA SSD - BTRFS   \\
+	\end{tabular}
+\end{table}
+
+\begin{table}[h!]
 	\caption{File Types Used For Testing}
 	\label{tab:file-types-used-for-testing}
 	\centering
 	\begin{tabular}{ l l l }
-		\hline
 		\textbf{Type} & \textbf{Total Bytes} & \textbf{File Count} \\
 		\hline
 		Single        & 2,000,000            & 1                   \\
