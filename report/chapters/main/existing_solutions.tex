@@ -55,6 +55,7 @@ There are many possible data points that can be collected however only the most 
 \begin{table}[h!]
 	\caption{Test System Specs}
 	\label{tab:test-system-specs}
+	\centering
 	\begin{tabular}{ l | l | }
 		\textbf{Operating System} & Arch (Linux 6.2.10)      \\
 		\textbf{CPU}              & AMD Ryzen 5 5600X 4.6GHz \\
@@ -139,4 +140,6 @@ When transferring photos which were larger than the plain-text files, all protoc
 
 In the last test using randomly generated binary data of lots of small 1KB files. FTP and SMB performed the worst, further indicating that the overhead required for negotiation of each file creates quite a lot of wasted data when transferring many small files. rsync still performed the best using only "10.34\%" extra, which is likely due to the minimal negotiation required when sending multiple files, rsync can also bundle multiple files into a single packet reducing the amount of packets actually sent over the network, which also reduces the amount of overhead as seen in the results only "69" packets were actually sent, compared to the 10,000+ in both FTP and SMB2.
 
-In conclusion these test results show that rsync seems to perform well at using the minimal amount of overhead. Despite FTP and SMB2 performing worse, it does not mean that they are unsuitable for transferring files across a network. They still performed well when transferring larger files as seen in the photos test results. However they would seem unsuitable for transferring many small files on a network with minimal amounts of bandwidth available.
+In conclusion these test results show that rsync seems to perform well at using the minimal amount of overhead, rsync also maintained the highest amount of transfer speed compared to the other tested solutions; even managing to reach "1.0Gbps" in the photos transfer test.
+
+Despite FTP and SMB2 performing worse in both transfer speed and overhead, it does not mean that they are unsuitable for transferring files across a network. They still performed well when transferring larger files as seen in the photos test results. However they would seem unsuitable for transferring many small files on a network with minimal amounts of bandwidth available. They also seem to be unable to take advantage of the available system resources (which are quite fast shown in Table~\ref{tab:test-system-specs}), and never managed to able to reach into the Gigabits of transfer speed.
