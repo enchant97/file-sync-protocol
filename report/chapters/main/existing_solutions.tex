@@ -12,11 +12,11 @@ There are many solutions that have been created to transfer files. Listed below 
 
 \section{How They Work}
 \subsection*{FTP}
-FTP is the oldest protocol (introduced in 1971) out of the ones that will be investigated. It allows for transferring files to and from a client and server. Since it was originally created to use NCP it uses two TCP sockets for each client to provide full-duplex communication, although TCP/IP is used which allows for full-duplex communication over one socket although the FTP protocol has never altered to provide compatibility. Having two sockets makes it harder for FTP to work over firewalls, and can even cause connection drops if no command packets are sent while a large data transfer is happening. FTP also uses TCP as a means to allow for a stateful connection meaning if the connection dropped; it would require a new connection handshake, sequence shown in Figure~\ref{fig:ftp-conn-sequence}.
+FTP is the oldest protocol (introduced in 1971) out of the ones that will be investigated. It allows for transferring files to and from a client and server. Since it was originally created to use NCP it used two TCP sockets for each client to provide full-duplex communication, although TCP/IP is used today; which allows for full-duplex communication over one socket. The FTP protocol has never altered to provide compatibility. Using two sockets makes it harder for FTP to work over firewalls, and can even cause connection drops if no command packets are sent while a large data transfer is happening. Since FTP uses TCP for the transport layer, it allows for a stateful connection meaning if the connection dropped; it would require a new connection handshake, sequence shown in Figure~\ref{fig:ftp-conn-sequence}.
 
 The FTP protocol has three modes for transferring data. The first is a streaming mode, where raw data is sent as a continuous stream; removing the need for any extra processing to be done by FTP. The other mode is where data is sent in blocks, this requires data to be split into separate blocks each having extra information attached such as the block header, byte count and the data field; this requires processing to be done by both TCP and FTP. The last method is where data is compressed and sent using the block mode.
 
-Command messages are exchanged using telnet strings, meaning they require no serialization step as they use standard ASCII characters. This also means commands could be sent directly by user input. When a server responds to a command it sends back a three digit status code as well as a optional text message which makes it human-readable for example on success as server may reply with: "200" or "200 OK".
+Command messages are exchanged using telnet strings, meaning they require no serialization step as they use standard ASCII characters. This also means commands could be sent directly by user input. When a server responds to a command it sends back a three digit status code as well as an optional text message which makes it human-readable for example a server sending a success message may reply with: "200" or "200 OK".
 
 FTP has several ways data may be sent, the two main data types are the "Type A" and "Type I". The first uses data sent as ASCII characters making it unsuitable for binary data, the second data type uses bytes making it suitable for sending binary data.
 
@@ -25,16 +25,16 @@ SMB2 is the next protocol to be investigated, it has been selected as it is used
 
 Like FTP it also utilises TCP for it's communication however, unlike FTP it uses only a single port since it takes advantage of TCP's full-duplex capability.
 
-A SMB2 packet is more complex than FTP, each packet has a header that uses bytes with padding to represent each field. This machine-readable format is structured meaning the packet will always have the same fields and order, making it simpler to process the packet. As well as being easier to process, it can also contain a lot more information with less overhead; since ASCII characters are not being used which would require eight bytes for each character.
+A SMB2 packet is more complex than FTP, each packet has a header that uses bytes with padding to represent each field. This machine-readable format is structured meaning the packet will always have the same fields and order, making it simpler to process the packet. As well as being easier to process, it can also contain a lot more information with less overhead; since ASCII characters are not being used which would have required eight bytes for each character.
 
 This protocol however differs from FTP as it requires more messages to be exchanged before any read/write commands can be issued. A standard SMB2 connection requires three messages to be exchanged before read/write commands. Then a further two messages to end the connection. On a high latency network or when being used on a VPN, this can create a high amount of wait time; thus making unsuitable for real-time file synchronisation, sequence shown in Figure~\ref{fig:smb2-conn-sequence}.
 
 SMB2 like the previous version (SMB1) transfers data using blocks, however unlike SMB1 it now has a flexible block size to increase transfer performance. This block level transfer is similar to FTP's block mode. Using blocks will increase latency due to extra negotiation overhead needed for every block sent and received as well as the TCP acknowledgements. SMB2 however does support pipelining allowing for extra requests to be sent before one has been received, this likely reduces the wait time in total.
 
 \subsection*{rsync}
-Rsync is the last protocol that has been selected as it is used in both home and business environments. Compared to the other protocols that have been investigated; it's main feature is synchronisation of file data \parencite{rsync-samba}.
+The last protocol that is being investigated is rsync, it has been selected as it is used in both home and business environments. Compared to the other protocols that have been investigated; it's main feature is synchronisation of file data \parencite{rsync-samba}.
 
-The rsync application is made to work over other protocols such as ssh, however has it's own native TCP implementation which will be investigated since it removes any extra complexities for testing.
+The rsync application is made to work over other protocols such as ssh, however it has it's own native TCP implementation which will be investigated to make it easier to just Investigate rsync itself.
 
 The rsync protocol starts a connection in a very minimal way only exchanging a initialisation message, which contains the version number of the protocol and what the supported hashing methods are available. This is very different to the other protocols such as SMB2 which has a complex handshake before any actual transfer can begin.
 
@@ -46,11 +46,11 @@ This protocol would be considered a block-level transfer since rsync is sending 
 
 
 \section{Testing}
-To test these protocols, a suitable testing environment will need to be setup. It will need to ensure that the tests can be repeated and give the same results. For this a virtualised network can be used to remove any outside interference. Creating containers using Docker will be used to provide this isolation, Docker features both virtual networking and the ability to create disposable containers that will operate the same independently of the underlying operating system.
+To test these protocols, a suitable testing environment will need to be setup. It will need to ensure that the tests can be repeated and give the same results. For this a virtualised network can be used to remove any outside interference. Creating containers using Docker will be used to provide this isolation, Docker features both virtual networking and the ability to create disposable containers that can be reset after each test ensuring accurate test data is collected.
 
 As well as the environment, to provide accurate results to allow comparisons; multiple different types of files should be tested. In the Table~\ref{tab:file-types-used-for-testing}. The tests will use a mixture of real and synthetic data, which will keep the tests to as real life as possible.
 
-There are many possible data points that can be collected however only the most relevant ones will be collected. These tests will collect the total bytes and total packets sent for a each test. This will allow the total amount of overhead (extra data other than the physical file) to the calculated. Being able to calculate the amount of overhead is important as it will allow the comparison of how much extra data is being transferred.
+There are many possible data points that can be collected however only the most relevant ones will be collected. These tests will collect the total bytes and total packets sent and average transfer speed for a each test. This will allow the total amount of overhead (extra data other than the physical file) to the calculated. Being able to calculate the amount of overhead is important as it will allow the comparison of how much extra data is being transferred. Capturing transfer speed will allow the analysis of how much a network's available speed can be utilised.
 
 
 \section{Comparison}
@@ -58,7 +58,7 @@ From the test results shown in Table~\ref{tab:existing-protocols-test-results} t
 
 Moving on to the next test transferring small text files of various sizes. rsync still performs the best in terms of overhead, using only an extra "5.64\%" of data. In this test FTP performs much worse; using "46.58\%" extra, performing very similar to SMB2 which uses "57.82\%". Both FTP and SMB2 seem unsuitable for transferring small text files compared to rsync most likely due to the complex negotiations required before each file transfer.
 
-When transferring photos which were larger than the plain-text files, all protocols performed similar, which indicates that when transferring larger files the overhead required to negotiate a transfer makes a smaller impact. It also shows that when the actual file data is being sent, there is a little amount of extra data being sent.
+When transferring photos which were larger than the plain-text files, all protocols produced similar results for overhead. This indicates that when transferring larger files the overhead required to negotiate a transfer makes a smaller impact.
 
 In the last test using randomly generated binary data of lots of small 1KB files. FTP and SMB performed the worst, further indicating that the overhead required for negotiation of each file creates quite a lot of wasted data when transferring many small files. rsync still performed the best using only "10.34\%" extra, which is likely due to the minimal negotiation required when sending multiple files, rsync can also bundle multiple files into a single packet reducing the amount of packets actually sent over the network, which also reduces the amount of overhead as seen in the results only "69" packets were actually sent, compared to the 10,000+ in both FTP and SMB2.
 

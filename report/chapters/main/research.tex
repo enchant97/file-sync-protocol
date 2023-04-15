@@ -1,5 +1,5 @@
 \section{The Transport Layer}
-At current all networked devices use the TCP/IP stack. This includes the TCP and UDP protocol.
+Currently as of 2023 networked devices use the TCP/IP stack. This includes the TCP and UDP protocol.
 
 \subsection*{UDP}
 UDP is the oldest protocol at the transport layer. It is also the least complex, since it features only necessary parts to allow transmission of packets across networks. It is a connectionless protocol, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling \parencite{udp-rfc768}.
@@ -20,30 +20,28 @@ Despite UDP having no form of error correction, it does have a single checksum f
 
 Using the checksum field for payload validation allows for corruption to be detected directly via hardware such as the NIC instead of implementing a application level one. This would allow a packet to be discarded before it even reaches the app. Removing the need to check for corruption at the application layer reduces the amount of possible scenarios to handle. Most UDP applications that need to be reliable would need to handle packet loss, reordering and duplication.
 
-The rest of the reliability could just be a reimplementation of TCP, however that would not improve over what already exists, as TCP could just of been used. Instead a custom solution built specifically for the task can be built.
-
-As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
+For UDP to have the same reliability as TCP, it could be reimplemented to match TCP, however that would not improve over what already exists, as TCP could just of been used. Instead a custom solution built specifically for the task could be built. As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
 
 \subsection*{TCP}
 Building from UDP; TCP is the most commonly used protocol. Providing many features such as detection of lost packets and handling of out of order packets. All of this can be implemented and processed at the kernel level, reducing the need for a developer to implement it in their application \parencite{tcp-rfc793}.
 
-This in-built reliability would of been important at the time most of these protocols where created, since machines at that time were limited on the amount of processing power and memory available. The reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
+This in-built reliability would of been important at the time most of these protocols were created, since machines at that time were limited on the amount of processing power and memory available. The reliability of TCP would have been important as many networks would have been using network configurations such as a BUS or RING to link computers together which were renowned for having packet loss due to packet collisions.
 
 TCP is still the most used protocol because of the in-built features, meaning that developers of programs do not need to worry about implementing their own error checking. Because of the widespread use it also guaranties device support, meaning greater compatibility.
 
 \subsection*{SCTP}
-There are many modern protocols being developed, one of these is SCTP (Stream Control Transmission Protocol). Which is meant to improve on the TCP and UDP drawbacks. It offers reliable in order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260}.
+There are many modern protocols being developed, one of these is SCTP (Stream Control Transmission Protocol). This protocols goal is to improve on the TCP and UDP drawbacks. Offering reliable in-order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260}.
 
 SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted or malicious.
 
 This limited supports means that it is currently unsuited for use, until more devices have support and the protocol is fully standardised and can then be supported by more network devices.
 
 \subsection*{Conclusion}
-It seems like the suitable way of implementing an improved file synchronisation/transfer protocol is by using UDP and building a custom reliability features specific for the application in the application layer. There will be many ways that the reliability can be implemented and these will be investigated during prototyping.
+It seems like the suitable way of implementing an improved file synchronisation/transfer protocol is by using UDP and building custom reliability features specific for the application; in the application layer. There will be many ways that the reliability could be implemented and these will be investigated during prototyping.
 
 
 \section{Data Format}
-Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload.
+Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload should be investigated.
 
 \subsection*{Telnet Strings}
 Using plain ASCII text for messages; would allow the protocol to work on archaic devices. However modern devices are being targeted, making this format unsuitable since it would increase the amount of network overhead required for sending ASCII messages. It would also not have a way of easily representing structured data.
@@ -55,7 +53,7 @@ JSON is the most common format seen in web based technologies, however it would 
 MessagePack (or CBOR) is also another format that could be used, it is more suitable for a protocol since it is encoded directly into binary, also removing the need to encode binary data as this data can be stored directly as a bytes type. However like JSON it is also schema-less. So extra validation would have to occur when checking validity of a message \parencite{msgpack} \parencite{cbor-rfc8949}.
 
 \subsection*{Protocol Buffers}
-A newer format is protobuf. This format is designed specifically for serializing structured data using pre-defined schemas, meaning validation of a message can be checked easily, since the expected format is known from the created schemas. Having a required schema makes it more suitable for use for serializing data since a protocols are pre-defined. Like MessagePack it is also a "binary wire" format making the serialized result as small as possible \parencite{protobuf-3}.
+A newer format is protobuf. This format is designed specifically for serializing structured data using pre-defined schemas, meaning validation of a message can be checked easily, since the expected format is known from the created schemas. Having a required schema makes it more suitable for use in protocols which have a pre-defined structure. Like MessagePack it is also a "binary wire" format making the serialized result as small as possible \parencite{protobuf-3}.
 
 \subsection*{Conclusion}
 After investing possible ways of formatting data to send as a payload for network packets. Protocol Buffers seem suitable for this project, as they require schemas to be defined and do not require extra serialization steps when sending binary data.
