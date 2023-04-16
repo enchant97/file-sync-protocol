@@ -57,3 +57,8 @@ A newer format is protobuf. This format is designed specifically for serializing
 
 \subsection*{Conclusion}
 After investing possible ways of formatting data to send as a payload for network packets. Protocol Buffers seem suitable for this project, as they require schemas to be defined and do not require extra serialization steps when sending binary data.
+
+\section{Language}
+After investigating several potential programming languages, Go seems suitable for prototyping. It is a compiled language so it will be performant enough to test against the existing protocols. It also features garbage collection features in the prototypes can be implemented without having to consider memory management, which will allow for rapid prototyping. As Protocol Buffers have been selected for the data format, Go already has "first class" support since they are both written and maintained by Google.
+
+Other languages were considered such as C which most of the existing solutions are written in however it would require too much time to be taken in memory management; which would slow down prototyping. A dynamic and interpreted language Python was also considered, however it would not be performant enough for comparing against existing solutions and may have dropped more UDP packets since processing would have been slower.
