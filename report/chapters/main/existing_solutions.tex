@@ -52,6 +52,8 @@ As well as the environment, to provide accurate results to allow comparisons; mu
 
 There are many possible data points that can be collected however only the most relevant ones will be collected. These tests will collect the total bytes and total packets sent and average transfer speed for a each test. This will allow the total amount of overhead (extra data other than the physical file) to the calculated. Being able to calculate the amount of overhead is important as it will allow the comparison of how much extra data is being transferred. Capturing transfer speed will allow the analysis of how much a network's available speed can be utilised.
 
+To capture the data for the test results Wireshark will be used, this allows for capturing the network packets using tcpdump and allowing quick analysis of the required data points from the collected packets; using it's inbuilt analysis section \parencite{wireshark}.
+
 
 \section{Comparison}
 From the test results shown in Table~\ref{tab:existing-protocols-test-results} transferring a single binary file it would appear that rsync has the least amount of overhead "0.73\%", this is likely due to the lightweight handshake required for establishing a connection. The next protocol with slightly more overhead "0.79\%" is FTP. The worst performing is SMB2 which had the largest amount of overhead "2.40\%", this is likely due to the complex handshake to establish a connection and the extra exchange required to transfer a file.
