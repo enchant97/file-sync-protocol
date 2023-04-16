@@ -1,0 +1,40 @@
+Once built all prototypes operate the same, the single built binary contains both the client and server. The commands to run both are shown below:
+
+Run Server:
+
+\begin{lstlisting}
+go run . server 127.0.0.1:9000
+\end{lstlisting}
+
+Run Client:
+
+\begin{lstlisting}
+go run . client 127.0.0.1:9000 <file path> ...
+
+or
+
+go run . client 127.0.0.1:9000 <directory path>
+\end{lstlisting}
+
+The prototypes have several configurations that can be controlled; to aid testing and experimentation. These are set using environment variables.
+
+Prototype One:
+
+\begin{itemize}
+    \item NET\_MTU, The maximum packet size that can be received
+\end{itemize}
+
+Prototype Two:
+
+\begin{itemize}
+    \item NET\_MTU, The maximum packet size that can be received
+    \item CHUNKS\_PER\_BLOCK, the number of chunks that can be sent per block
+\end{itemize}
+
+Prototype Three:
+
+\begin{itemize}
+    \item NET\_MTU, The maximum packet size that can be received
+    \item CHUNKS\_PER\_BLOCK, the number of chunks that can be sent per block
+    \item TIMEOUT\_MS, wait time for ACK until another packet is sent
+\end{itemize}
