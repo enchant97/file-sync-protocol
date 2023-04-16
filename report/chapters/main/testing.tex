@@ -7,19 +7,19 @@ After the initial tests several issues in the code needed to be fixed. These are
 
 \begin{itemize}
     \item (1e67ab) payload offset out by 1, causing payload to be incorrectly stored
-    \item (dfb553) message size prediction code miss calculating header + meta length fields, causing header and meta fields sizes to incorrectly calculated and creating an invalid packet
+    \item (dfb553) message size prediction code miss-calculates header + meta length fields, causing header and meta fields sizes to be incorrect; creating an invalid packet
     \item (35db84) client starting chunk id is 0, should be 1
-    \item (455708) buffer payload was not copied (instead referenced), causing next request would alter payload values
+    \item (455708) buffer payload was not copied (instead referenced), causing next request to alter payload values
 \end{itemize}
 
-Once these issues were fixed testing results could be gathered. After testing prototype one it has been found that the overhead in transferring a single file is less than the existing protocols having only "0.14\%" overhead; shown in Table~\ref{tab:prototypes-test-results}. It also sent out less packets than the existing solutions, only "39".
+After testing prototype one it has been found that the overhead in transferring a single file is less than the existing protocols having only "0.14\%" overhead; shown in Table~\ref{tab:prototypes-test-results}. It also sent out less packets than the existing solutions, only "39".
 
 When testing with text files the prototype produced "7.48\%" of overhead, comparing this to the best performing existing protocol rsync which was less "5.64\%". Whilst rsync is less it is only a
-"1.84\%" more, this could likely be reduced more in a future prototype.
+"1.84\%" more, this could likely be reduced further in a future prototype.
 
 In the next test with a collection of photos; the prototype produced a higher overhead compared to all investigated existing solutions "1.73\%", however the number of packets sent is lower "1,128". This likely points to the individual packets for transferring the physical file data having more overhead. If this was the final solution, it would be ineffective for transferring larger files since the amount of wasted data would scale with the file size.
 
-In the last test of sending a purely synthetic scenario, of many small files sized at 1KB. The prototype produced a overhead of "~18\%" extra compared to rsync which was the best performing existing solution. Compared to the photos test, this scenario shows that this prototype has a greater amount of overhead sent for negotiating a file before transfer. However this overhead may be acceptable as rsync provides little safeguarding around file locking, compared to this prototype which if fully completed would issue an error packet before allow a transfer. Compared to the other protocols which do implement file locks (FTP and SMB2); this prototype has a smaller overhead. Looking at the number of packets sent shows that "2,504" were sent, comparing this to rsync only "69" were sent. This is a very large difference. This prototype can only send chunks relating to the current file until the next is negotiated, whereas in rsync multiple files can be included in a single packet, making it more suitable for transferring small files, when many can fit in a single packet.
+In the last test which used a purely synthetic scenario; sending many small files sized at 1KB. The prototype produced a overhead of "~18\%" extra compared to rsync which was the best performing existing solution. Compared to the photos test, this scenario shows that this prototype has a greater amount of overhead sent for negotiating a file before transfer. However this overhead may be acceptable as rsync provides little safeguarding around file locking, compared to this prototype which if fully completed would issue an error packet before allowing a transfer to occur. Compared to the other protocols which do implement file locks (FTP and SMB2); this prototype has a smaller overhead. Looking at the number of packets sent; shows that "2,504" were sent, comparing this to rsync only "69" were sent. This is a very large difference. This prototype can only send chunks relating to the current file until the next is negotiated, whereas in rsync multiple files can be included in a single packet, making it more suitable for transferring small files, when many can fit in a single packet. Reducing the number of packets sent over the network can reduce both latency and the amount of traffic transferred allowing the bandwidth to be repurposed for another task.
 
 This test measured a "8.0Gbps" in transfer speed. Whilst that may seem very high it is due to UDP (and the prototype) not requiring acknowledgements for each packet.
 
@@ -29,29 +29,29 @@ It has also been found that having two serialized fields (header, metadata) is a
 
 
 \section{Prototype Two}
-After running the first test several issues in the code needed were discovered and had to be fixed. These are listed below (with git commit hashes):
+After running the first test; an issue in the code discovered and had to be fixed. This is listed below (with git commit hashes):
 
 \begin{itemize}
     \item (cae32ef) file reader cursor position not set back after a requested resend, causing incorrect data to be sent on next PSH. Fixed by seeking to stored seek offset before reading
 \end{itemize}
 
-Implementing the improvements discussed in the design section prototype two has been tested. In the first test sending a single file resulted in a higher overhead than the previous prototype, it also now has a higher overhead compared to all the tested existing solutions now showing "6.24\%". This means that implementing the transfer in blocks increased the overhead due to more packets being sent, which is shown in the results Table~\ref{tab:prototypes-test-results} going from "39" packets to "45".
+In the first test sending a single file resulted in a higher overhead than the previous prototype, it also now has a higher overhead compared to all the tested existing solutions now showing "6.24\%". This means that implementing the transfer in blocks increased the overhead due to more packets being sent, which is shown in the results Table~\ref{tab:prototypes-test-results} going from "39" packets to "45".
 
-In the text and photos tests prototype two still performed better than FTP and SMB2, however worse than rsync and the first prototype having "2.44\%" more overhead when transferring text and "0.19\%" more when transferring photos. This shows that the extra overhead created for handling validation of each block creates more impact on smaller files. Looking at the synthetic 1KB files test, shows the overhead to be "6.54\%" greater than prototype one. This indicates the same issue found in the text the photos test results.
+In the text and photos tests prototype two still performed better than FTP and SMB2, however worse than rsync and the first prototype having "2.44\%" more overhead when transferring text and "0.19\%" more when transferring photos. This shows that the extra overhead created for handling validation of each block creates more impact on smaller files. Looking at the synthetic 1KB files test, shows the overhead to be "6.54\%" greater than prototype one. This indicates the same issue found in the text and photos test results.
 
 In this prototype, test transfer speeds have reduced from prototype one, for example in the photos test it went from "1.9Gbps" down to "255.9Mbps", whilst slower than rsync's 1.0Gbps it reached a much greater speed than both FTP and SMB2. It likely that the extra validation added can be optimised at the software side in the last prototype.
 
 Adding the extra message to mark a file as EOF (end-of-file), has been proved to create more overhead when sending many files. However this extra feature should allow for longer transfers to handle missing data sooner; rather than waiting until the end. The next prototype will need to ensure packet size is kept to a minimum, to reduce this overhead.
 
-During testing an issue was discovered during transfers with multiple blocks, when they arrive out-of-order. This issue causes the chunks for different blocks to be captured incorrectly causing a corrupted file. To handle this prototype three will need to allow the receiver of a transfer to see which current chunk relates to what block, this will however increase the size of each chunk packet.
+During testing an issue was discovered during transfers with multiple blocks, when they arrive out-of-order. This issue causes the chunks for different blocks to be captured incorrectly causing a corrupted file. To handle this prototype three will need to allow the receiver of a transfer to see which current chunk relates to what block. This will however increase the size of each chunk packet, but is a necessary increase in overhead for vital error checking.
 
-Allowing the server to also know the maximum number of chunks per block could also also allow memory to be pre-allocated allowing for less time to be taken allocating memory and potently reducing the number of dropped packets during a transfer on a lower spec machine.
+Allowing the server to also know the maximum number of chunks per block could also allow memory to be pre-allocated allowing for less time to be taken allocating memory and potentially reducing the number of dropped packets during a transfer on a lower spec machine.
 
-Due to the seen higher overhead created in both prototype one and two, the field sizes need to be reduced. Reserving 8 bytes each for the header, metadata and payload lengths causes quite a large amount of reserved space. These could be reduced from uint64 fields to uint32 for example. Also removing the metadata field as discussed in prototype one's testing would remove the need for one of the length fields.
+Due to the seen higher overhead created in both prototype one and two, the field sizes need to be reduced. Reserving 8 bytes each for the header, metadata and payload lengths causes quite a large amount of reserved space. These could be reduced from uint64 fields to uint32 reducing each field from taking 8 bytes to only 4 bytes. Also removing the metadata field as discussed in prototype one's testing would remove the need for one of the length fields.
 
 
 \section{Prototype Three}
-After running the first test several issues in the code needed were discovered and had to be fixed. These are listed below (with git commit hashes):
+After running the first test several issues in the code were discovered and had to be fixed. These are listed below (with git commit hashes):
 
 \begin{itemize}
     \item (814c3) Incomplete message sending (receive timeout method was broken)
@@ -60,16 +60,16 @@ After running the first test several issues in the code needed were discovered a
     \item (eb664): ACK message did not send real request id, fixed by actually sending the request id
 \end{itemize}
 
-Testing prototype three with a single file is shown to create a greater overhead than previous prototypes, now reaching "8.99\%". Despite reducing the field sizes and removing the metadata field, it has proved ineffective, due to the added error handling required to ensure the chunk blocks are received in the correct order. However despite the increase in overhead of bytes, the number of packets sent is still smaller than the existing solutions having only exchanged "46" packets. This is likely due to UDP being used and having a reduced amount of acknowledge requests.
+Testing prototype three with a single file is shown to create a greater overhead than previous prototypes, now reaching "8.99\%". Despite reducing the field sizes and removing the metadata field, it has proved ineffective, due to the added error handling required to ensure the chunk blocks are received in the correct order. However despite the increase in overhead of bytes, the number of packets sent is still smaller than the existing solutions having only exchanged "46" packets. This is likely due having a reduced amount of acknowledge requests.
 
-In both the text and photos test the overall overhead has increased from previous prototypes, however when transferring text files is still less than FTP and SMB2. As shown in the previous test data, this increase is likely been caused by the extra error checking.
+In both the text and photos test the overall overhead has increased from previous prototypes, however when transferring text files it is still less than FTP and SMB2. As shown in the previous test data, this increase has likely been caused by the extra error checking.
 
-However in the synthetic test with 1KB files, the overall overhead has decreased from the previous prototype by "~5\%". This shows that the overhead created by field size has helped decrease the amount of unnecessary reserved space taken from each packet. The amount of packets exchanged has stayed the same still being "3,504", this is due to the extra validation being able to fit in the same packets because of the previously mentioned reduced reserved space.
+However in the synthetic test with 1KB files, the overall overhead has decreased from the previous prototype by "\~5\%". This shows that the overhead created by field size has helped decrease the amount of unnecessary reserved space taken from each packet. The amount of packets exchanged has stayed the same still being "3,504", this is due to the extra validation being able to fit in the same number of packets because of the previously mentioned reduction in reserved space.
 
 In this prototype, since optimising the code and removing the need for two serialization steps, the prototype is now almost the fastest in all tests. In the photos test it now is slightly faster than rsync; now reaching "1.1Gbps" in transfer speed. It is also greatly faster than rsync in the text test, performing "207.5Mbps" faster. It is also a similar transfer speed during the 1KB synthetic test, only being "1.2Mbps" slower than rsync (the fastest existing solution tested).
 
 During testing it was also discovered that the last message sent by the client always results in multiple (as many as five) resends being sent. The cause of this issue however was not found; but does not effect the running of the prototype.
 
-The testing of this prototype has found that when large transfers are made the overhead is greater, due to the extra error handling required because UDP has been used. This could likely be reduced in future prototypes.
+The testing of this prototype has found that when large transfers are made the overhead is greater, due to the extra error handling required because UDP has been used. This could likely be reduced in future prototypes by altering the way chunk headers are structured, for example every chunk could have a md4 hash made and each hash could be sent when a new block is started.
 
-As discussed in a previous prototype test, when transferring many small files where an individual file does not fill an entire packet a lot of overhead is created from each file needing a separate "handshake", if rsync's methodology of bundling multiple files in one packet was used a much lower overhead would be seen. On a higher latency network having less packets exchanged would also decrease the amount of wait time that is needed for every acknowledgement.
+As discussed in a previous prototype test, when transferring many small files where an individual file does not fill an entire packet a lot of overhead is created from each file needing a separate "handshake", if rsync's methodology of bundling multiple files in one packet was used; a much lower overhead could be seen, thus allowing better utilisation of the maximum transfer speed. On a higher latency network having less packets exchanged would also decrease the amount of wait time that is needed for every acknowledgement, allowing more time to be spent transferring actual file data.
