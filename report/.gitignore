@@ -13,3 +13,9 @@
 # biber
 *.bbl
 *.blg
+
+# glossaries
+*.acn
+*.acr
+*.alg
+*.ist

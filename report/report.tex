@@ -17,6 +17,13 @@
     colorlinks,
     allcolors=black
 }
+% glossaries
+% add 'nomain' if no main glossary exists
+\usepackage[nomain,acronym,nopostdot]{glossaries}
+\input{glossaries.tex}
+\makeglossaries
+% remove glossary section titles
+\renewcommand{\glossarysection}[2][]{}
 \usepackage{bookmark}
 % create bibliography
 % run 'biber <tex name>' to convert .bib files
@@ -83,6 +90,7 @@ There are no ethical considerations.
 
 \appendix
 \chapter{Glossary}
+\printglossaries
 \chapter{Marking Scheme}
 \chapter{Changes to the Project Initiation Document}
 \chapter{Current Environment Investigation Report}
@@ -112,4 +120,5 @@ Not Applicable.
 \chapter{Prototype Designs}
 \input{chapters/appendices/designs.tex}
 
+\glsaddallunused
 \end{document}
