@@ -3,17 +3,17 @@ Once built all prototypes operate the same, the single built binary contains bot
 Run Server:
 
 \begin{lstlisting}
-go run . server 127.0.0.1:9000
+./prototype server 127.0.0.1:9000
 \end{lstlisting}
 
 Run Client:
 
 \begin{lstlisting}
-go run . client 127.0.0.1:9000 <file path> ...
+./prototype client 127.0.0.1:9000 <file path> ...
 
 or
 
-go run . client 127.0.0.1:9000 <directory path>
+./prototype client 127.0.0.1:9000 <directory path>
 \end{lstlisting}
 
 The prototypes have several configurations that can be controlled; to aid testing and experimentation. These are set using environment variables.
