@@ -45,11 +45,12 @@ Once a transfer is finished the client will send a "REQ" packet containing the l
 
 To end a connection, the client will send a "FIN" packet, this will include just the client ID. The server will recognise the request to end and clear the client ID and "ACK" the request.
 
+A sequence diagram example of a complete transfer is shown in Figure~\ref{fig:p1-sequence}.
 
 \section{Prototype Two}
 The second prototype will focus on improving the method of sending the chunked data. This is necessary improvement, as in the event of many packets being dropped during a transfer; it will not be until the end of the transfer until the lost packets can be recovered.
 
-To solve this without sending and waiting for acknowledgments for each packet (re-implementing TCP) a different method must be implemented. On smaller transfers the number of lost packets to recover from will be less than a larger transfer, grouping several chunks into a block of chunks then verifying each block will likely solve this issue.
+To solve this without sending and waiting for acknowledgments for each packet (re-implementing TCP) a different method must be implemented. On smaller transfers the number of lost packets to recover from will be less than a larger transfer, grouping several chunks into a block of chunks then verifying each block will likely solve this issue. A sequence diagram example of a complete transfer is shown in Figure~\ref{fig:p2-sequence}.
 
 In prototype one during the end of a transfer only three request types were sent: request to send a file, the file data and a verify packet to check if any chunks were needed to be resent. In this prototype a new request type has been added for marking the end-of-file (EOF) and ending the file transfer. The request for verification will not end the transfer; instead it is repurposed for checking for missing chunks for the current group. This will reduce the complexity of needing the server to keep a record of the blocks.
 
