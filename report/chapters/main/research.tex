@@ -1,5 +1,5 @@
 \section{The Transport Layer}
-Currently as of 2023 networked devices use the TCP/IP stack. This includes the TCP and UDP protocol.
+Currently as of 2023 networked devices commonly use the TCP/IP stack. This includes the \acrfull{tcp} and the \acrfull{udp}.
 
 \subsection*{UDP}
 UDP is the oldest protocol at the transport layer. It is also the least complex, since it features only necessary parts to allow transmission of packets across networks. It is a connectionless protocol, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling \parencite{udp-rfc768}.
@@ -10,7 +10,7 @@ This would seem to make UDP unsuitable for any reliable communication. However s
 
 For example a modern protocol that has widespread use today is QUIC. It is built on top of UDP, providing all the necessary reliability features in the application layer. It is designed to have improved performance over TCP. Currently it is most used for serving website content over http/3 which uses QUIC.
 
-UDP is also used in VPN protocols such as WireGuard and OpenVPN. These also have reliability built-in allowing for low latency access of remote networks.
+UDP is also used in \acrfull{vpn} protocols such as WireGuard and OpenVPN. These also have reliability built-in allowing for low latency access of remote networks.
 
 Using UDP for reliable applications is possible since most networks have limited packet loss, due to more modern network technology being used such as switches; eliminating packet collisions.
 
@@ -30,7 +30,7 @@ This in-built reliability would of been important at the time most of these prot
 TCP is still the most used protocol because of the in-built features, meaning that developers of programs do not need to worry about implementing their own error checking. Because of the widespread use it also guaranties device support, meaning greater compatibility.
 
 \subsection*{SCTP}
-There are many modern protocols being developed, one of these is SCTP (Stream Control Transmission Protocol). This protocols goal is to improve on the TCP and UDP drawbacks. Offering reliable in-order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. SCTP keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260} \parencite{ladha2004improving}.
+There are many modern protocols being developed, one of these is \acrfull{sctp}. This protocols goal is to improve on the TCP and UDP drawbacks. Offering reliable in-order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. \acrshort{sctp} keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260} \parencite{ladha2004improving}.
 
 SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted or malicious.
 
