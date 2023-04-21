@@ -1,4 +1,24 @@
 \section{Testing Environment}
+This section will explain how the testing environment is setup and what tools have been used and configured.
+
+\begin{itemize}
+	\item Since performance is being tested, the result will vary depending on system. The system used is shown in Table~\ref{tab:test-system-specs}
+    \item Docker is being used for creating disposable containers, the "Dockerfile's" and other configurations can be found in the project git repository, links can be found at Appendix~ \ref{project-links}
+	\item Wireshark is being used to collect packets; statistics are exported as CSV from the "Statistics" tab using both "IO Graph" and "Conversations"
+	\item To get accurate test results a mix of real and synthetic files are being used, these are documented in Table~\ref{tab:file-types-used-for-testing}
+	\item The following data points will be collected
+	      \begin{itemize}
+		      \item Total bytes sent
+		      \item Total packets sent
+		      \item Average transfer speed
+	      \end{itemize}
+	\item The following data points will be calculated
+	      \begin{itemize}
+		      \item Transfer overhead in bytes
+		      \item Transfer overhead as a percentage
+	      \end{itemize}
+\end{itemize}
+
 \begin{table}[h!]
 	\caption{Test System Specs}
 	\label{tab:test-system-specs}
