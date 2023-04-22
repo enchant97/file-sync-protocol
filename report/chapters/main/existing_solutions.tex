@@ -58,11 +58,57 @@ Further testing details can be found in Appendix~\ref{sec:testing-environment}, 
 
 
 \section{Comparison}
+\begin{wrapfigure}{r}{0.3\textwidth}
+    \caption{Overhead 'Single'}
+	\scalebox{0.8}{
+		\begin{bchart}[max=50,width=4cm,plain]
+			\bcbar[label=FTP, value=14762]{15}
+			\bcbar[label=SMB2, value=49153]{49}
+			\bcbar[label=RSYNC, value=14762]{14}
+			\bcxlabel{Bytes}
+		\end{bchart}}
+\end{wrapfigure}
+
 From the test results shown in Table~\ref{tab:existing-protocols-test-results} transferring a single binary file it would appear that rsync has the least amount of overhead "0.73\%", this is likely due to the lightweight handshake required for establishing a connection. The next protocol with slightly more overhead "0.79\%" is FTP. The worst performing is SMB2 which had the largest amount of overhead "2.40\%", this is likely due to the complex handshake to establish a connection and the extra exchange required to transfer a file.
+
+\begin{wrapfigure}{r}{0.3\textwidth}
+    \caption{Overhead 'Text'}
+	\scalebox{0.8}{
+		\begin{bchart}[max=100,width=4cm,plain]
+			\bcbar[label=FTP, value=63422]{63}
+			\bcbar[label=SMB2, value=99747]{99}
+			\bcbar[label=RSYNC, value=4347]{4}
+			\bcxlabel{Bytes}
+		\end{bchart}}
+\end{wrapfigure}
 
 Moving on to the next test transferring small text files of various sizes. rsync still performs the best in terms of overhead, using only an extra "5.64\%" of data. In this test FTP performs much worse; using "46.58\%" extra, performing very similar to SMB2 which uses "57.82\%". Both FTP and SMB2 seem unsuitable for transferring small text files compared to rsync most likely due to the complex negotiations required before each file transfer.
 
+\begin{wrapfigure}{r}{0.3\textwidth}
+    \caption{Overhead 'Photos'}
+	\scalebox{0.8}{
+		\begin{bchart}[max=31,width=4cm,plain]
+			\bcbar[label=FTP, value=239590]{23}
+			\bcbar[label=SMB2, value=310103]{31}
+			\bcbar[label=RSYNC, value=229764]{22}
+			\bcxlabel{Bytes}
+		\end{bchart}}
+\end{wrapfigure}
+
+\newpage
+
 When transferring photos which were larger than the plain-text files, all protocols produced similar results for overhead. This indicates that when transferring larger files the overhead required to negotiate a transfer makes a smaller impact.
+
+\begin{wrapfigure}{r}{0.35\textwidth}
+    \caption{Overhead '1KB Random'}
+	\scalebox{0.8}{
+		\begin{bchart}[max=150,width=4cm,plain]
+			\bcbar[label=FTP, value=14763292]{147}
+			\bcbar[label=SMB2, value=2443640]{24}
+			\bcbar[label=RSYNC, value=59065]{5}
+			\bcxlabel{Bytes}
+		\end{bchart}}
+\end{wrapfigure}
 
 In the last test using randomly generated binary data of lots of small 1KB files. FTP and SMB performed the worst, further indicating that the overhead required for negotiation of each file creates quite a lot of wasted data when transferring many small files. rsync still performed the best using only "10.34\%" extra, which is likely due to the minimal negotiation required when sending multiple files, rsync can also bundle multiple files into a single packet reducing the amount of packets actually sent over the network, which also reduces the amount of overhead as seen in the results only "69" packets were actually sent, compared to the 10,000+ in both FTP and SMB2.
 
