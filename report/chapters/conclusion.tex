@@ -2,7 +2,9 @@ Testing and comparing the prototype to selected existing solutions (FTP, SMB and
 
 To improve on this prototype, utilising how rsync handles small files; by placing many in a single packet could greatly increase the transfer speed and minimise on the amount of packets needed to be sent per file. Limiting latency as less packets need to traverse a network, which depending on the network or even networks could cause the transfer speed to increase.
 
-Using UDP for this investigation, while has resulted in seeing drastic transfer speed improvements may not be feasible without the help of professionals or more future experience due to the complexities involved in handling error checking, quality of service (QoS) and congestion control.
+When selecting data points to collect for testing (shown in Appendix~\ref{sec:testing-environment}), CPU load was not measured. Whilst this is an important statistic to measure; the created prototypes code were not optimised, this would have created inaccurate metrics for comparing against the existing solutions. In future if the prototypes were developed further this metric would be collected, as CPU load plays an important factor in transfer speed since other tasks may be happening on the system; which could effect performance.
+
+Using UDP for this investigation, whilst has resulted in seeing drastic transfer speed improvements may not be feasible without the help of professionals or more future experience due to the complexities involved in handling error checking, \acrfull{qos} and congestion control.
 
 It may however be feasible in the future to experiment with using QUIC as the transport protocol, which uses UDP and provides all of these features. Or even using SCTP in the future when it is standardised and is able to work across the internet, which is different from the existing base TCP/IP stack and allows for a much more modern approach to networking featuring the in-built ability to combine multiple packet payloads into a single packet, potentially removing the need to implement multiple messages in one packet at the application level.
 
