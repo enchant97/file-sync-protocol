@@ -46,7 +46,7 @@ This protocol would be considered a block-level transfer since rsync is sending 
 
 
 \section{Testing}
-To test these protocols, a suitable testing environment will need to be setup. It will need to ensure that the tests can be repeated and give the same results. For this a virtualised network can be used to remove any outside interference. Creating containers using Docker will be used to provide this isolation, Docker features both virtual networking and the ability to create disposable containers that can be reset after each test ensuring accurate test data is collected.
+To test these protocols, a suitable testing environment will need to be setup. It will need to ensure that the tests can be repeated and give the same results. For this a virtualised network can be used to remove any outside interference. Creating containers using Docker will be used to provide this isolation, Docker features both virtual networking and the ability to create disposable containers that can be reset after each test ensuring accurate test data is collected \parencite{matthias2015docker}.
 
 As well as the environment, to provide accurate results to allow comparisons; multiple different types of files should be tested. In the Table~\ref{tab:file-types-used-for-testing}. The tests will use a mixture of real and synthetic data, which will keep the tests to as real life as possible.
 
