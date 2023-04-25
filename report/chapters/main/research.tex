@@ -1,5 +1,5 @@
 \section{The Transport Layer}
-Currently as of 2023 networked devices commonly use the TCP/IP stack. This includes the \acrfull{tcp} and the \acrfull{udp}.
+Currently as of 2023 networked devices commonly use \acrfull{tcpip}. This includes the \acrfull{tcp} and the \acrfull{udp}.
 
 \subsection*{UDP}
 UDP is the oldest protocol at the transport layer. It is also the least complex, since it features only necessary parts to allow transmission of packets across networks. It is a connectionless protocol, meaning it has no handshake to establish a new connection and has no form of reliability or other error handling \parencite{udp-rfc768}.
@@ -18,7 +18,7 @@ It is now common for newer protocols to be built using UDP since it is wasteful 
 
 Despite UDP having no form of error correction, it does have a single checksum field in the header. Depending on the situation it can even be disabled. This checksum is usually only validates the headers are not corrupted leaving the payload to possibly have been corrupted. An under-used part of the specification is to enable the checksum to include the payload as well, meaning that the whole packet could be validated and ignored if corruption occurred.
 
-Using the checksum field for payload validation allows for corruption to be detected directly via hardware such as the NIC instead of implementing a application level one. This would allow a packet to be discarded before it even reaches the app. Removing the need to check for corruption at the application layer reduces the amount of possible scenarios to handle. Most UDP applications that need to be reliable would need to handle packet loss, reordering and duplication \parencite{steinke2001tcp}.
+Using the checksum field for payload validation allows for corruption to be detected directly via hardware such as the \acrfull{nic} instead of implementing a application level one. This would allow a packet to be discarded before it even reaches the app. Removing the need to check for corruption at the application layer reduces the amount of possible scenarios to handle. Most UDP applications that need to be reliable would need to handle packet loss, reordering and duplication \parencite{steinke2001tcp}.
 
 For UDP to have the same reliability as TCP, it could be reimplemented to match TCP, however that would not improve over what already exists, as TCP could just of been used. Instead a custom solution built specifically for the task could be built. As mentioned before most internal networks now have limited packet loss, meaning that selective error checking could be implemented, allowing for a lower latency and higher throughput transfer.
 
@@ -32,7 +32,7 @@ TCP is still the most used protocol because of the in-built features, meaning th
 \subsection*{SCTP}
 There are many modern protocols being developed, one of these is \acrfull{sctp}. This protocols goal is to improve on the TCP and UDP drawbacks. Offering reliable in-order data transfer while having a simpler packet structure compared to TCP, having two main sections; the header and chunks. There can be multiple chunks per packet with two different types available, payload data and control messages, this allows for smaller messages to be bundled together if they can fit inside one packet; thus reducing network overhead. \acrshort{sctp} keeps a connection open by using "heartbeat" messages, this ensures both ends of a connection knows whether they can still access each other \parencite{sctp-rfc9260} \parencite{ladha2004improving}.
 
-SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the RFC still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted or malicious \parencite{stewart2001sctp}.
+SCTP seems like a suitable improvement over TCP and UDP, however it has drawbacks. Mainly it's limited adoption which is most likely due to the \acrfull{rfc} still being in a "Proposal" stage. This is a problem since it is a transmission protocol, it requires all receiving devices on the network to understand it; this would include routers and switches. This limited adoption would therefore cause issues as you would have to ensure that all devices supported it, otherwise packets may be detected as unknown and dropped by the unsupported devices; due to packets being treated as corrupted or malicious \parencite{stewart2001sctp}.
 
 This limited supports means that it is currently unsuited for use, until more devices have support and the protocol is fully standardised and can then be supported by more network devices.
 
@@ -50,7 +50,7 @@ Using \acrshort{udp} seems suitable for implementing a modern protocol; the reas
 Before experimental prototypes can be made, investigating how to structure the data which will be contained in the packets payload should be investigated.
 
 \subsection*{Telnet Strings}
-Using plain ASCII text for messages; would allow the protocol to work on archaic devices. However modern devices are being targeted, making this format unsuitable since it would increase the amount of network overhead required for sending ASCII messages. It would also not have a way of easily representing structured data.
+Telnet Strings use plain-text encoded using \acrshort{ascii}; this would allow the protocol to work on archaic devices. However modern devices are being targeted, making this format unsuitable since it would increase the amount of network overhead required for sending ASCII messages. It would also not have a way of easily representing structured data.
 
 \subsection*{JSON}
 \acrfull{json} is the most common format seen in web based technologies, however it would be unsuitable for a protocol; since it requires all data to be encoded as ASCII so any binary data would have to be encoded for example using base64. This extra encoding step would increase both complexity and the required processing power needed to handle each packet \parencite{json-rfc8259}.

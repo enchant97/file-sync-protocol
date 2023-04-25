@@ -16,7 +16,7 @@ FTP is the oldest protocol (introduced in 1971) out of the ones that will be inv
 
 The FTP protocol has three modes for transferring data. The first is a streaming mode, where raw data is sent as a continuous stream; removing the need for any extra processing to be done by FTP. The other mode is where data is sent in blocks, this requires data to be split into separate blocks each having extra information attached such as the block header, byte count and the data field; this requires processing to be done by both TCP and FTP. The last method is where data is compressed and sent using the block mode.
 
-Command messages are exchanged using telnet strings, meaning they require no serialization step as they use standard ASCII characters. This also means commands could be sent directly by user input. When a server responds to a command it sends back a three digit status code as well as an optional text message which makes it human-readable for example a server sending a success message may reply with: "200" or "200 OK".
+Command messages are exchanged using telnet strings, meaning they require no serialization step as they use the standard encoding \acrfull{ascii}. This also means commands could be sent directly by user input. When a server responds to a command it sends back a three digit status code as well as an optional text message which makes it human-readable for example a server sending a success message may reply with: "200" or "200 OK".
 
 FTP has several ways data may be sent, the two main data types are the "Type A" and "Type I". The first uses data sent as ASCII characters making it unsuitable for binary data, the second data type uses bytes making it suitable for sending binary data.
 
