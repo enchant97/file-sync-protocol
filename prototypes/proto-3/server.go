@@ -140,13 +140,15 @@ func server(address string, mtu uint32) {
 	}
 
 	isReceivedMessageFromPast := func() bool {
-		if requestIdDescriptor := receivedMessage.Header.ProtoReflect().Descriptor().Fields().ByNumber(1); requestIdDescriptor != nil {
-			if receivedMessage.Header.ProtoReflect().Get(requestIdDescriptor).Uint() < currentRequestID {
+		message := receivedMessage.Header.ProtoReflect()
+		fields := message.Descriptor().Fields()
+		if requestIdDescriptor := fields.ByNumber(1); requestIdDescriptor != nil {
+			if message.Get(requestIdDescriptor).Uint() < currentRequestID {
 				return true
 			}
 			// validate sub request id (if it exists)
-			if subRequestIdDescriptor := receivedMessage.Header.ProtoReflect().Descriptor().Fields().ByName("sub_request_id"); subRequestIdDescriptor != nil && currentSubRequestID != 0 {
-				if receivedMessage.Header.ProtoReflect().Get(subRequestIdDescriptor).Uint() < currentSubRequestID {
+			if subRequestIdDescriptor := fields.ByName("sub_request_id"); subRequestIdDescriptor != nil && currentSubRequestID != 0 {
+				if message.Get(subRequestIdDescriptor).Uint() < currentSubRequestID {
 					return true
 				}
 			}
