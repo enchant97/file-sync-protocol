@@ -6,11 +6,55 @@ This prototype will use the binary protobuf format for structuring the packet da
 \subsubsection*{Packet Structure}
 The packets structure will be split into several fields, using flexible offsets meaning the packet size is dynamic. Having a dynamic packet size should reduce the amount of wasted space, leaving more available space for the actual file data.
 
-A packet will feature two protobuf fields one for the header which will describe what the packet is, and the second will include any extra metadata relevant to a request/response.
+A packet will feature two protobuf fields one for the header which will describe what the packet is, and the second will include any extra metadata relevant to a request/response. The packets fields are illustrated in Table~\ref{tab:p1d-packet-fields}.
 
-A packet's fields will be structured as shown in Table~\ref{tab:p1d-packet-fields}.
+\begin{table}[h!]
+    \caption{Prototype One Packet Fields}
+    \label{tab:p1d-packet-fields}
+    \centering
+    \begin{tabular}{ l l l }
+        \hline
+        \textbf{Num} & \textbf{Name}   & \textbf{Data-Type} \\
+        \hline
+        001          & Type            & uint8              \\
+        \hline
+        002          & Header Length   & uint64             \\
+        \hline
+        003          & Header          & protobuf           \\
+        \hline
+        004          & Metadata Length & uint64             \\
+        \hline
+        005          & Metadata        & protobuf           \\
+        \hline
+        006          & Payload Length  & uint64             \\
+        \hline
+        007          & Payload         & binary             \\
+        \hline
+    \end{tabular}
+\end{table}
 
 The first field will take up exactly 1 byte, this field will be used to set the type of the packet. This will determine what protobuf encoded header structure will be. Using 1 byte will allow for 255 possible message types. Since these prototypes will not be a fully implemented solution only a few types will be implemented, which are shown in Table~\ref{tab:p1d-packet-types}.
+
+\begin{table}[h!]
+    \caption{Prototype One Packet Types}
+    \label{tab:p1d-packet-types}
+    \centering
+    \begin{tabular}{ l l l }
+        \hline
+        \textbf{Prefix} & \textbf{Value} & \textbf{Note}                \\
+        \hline
+        SYN             & 1              & Perform connection handshake \\
+        \hline
+        ACK             & 2              & Acknowledge request          \\
+        \hline
+        REQ             & 3              & Request to send/receive      \\
+        \hline
+        PSH             & 4              & Send payload data            \\
+        \hline
+        FIN             & 254            & End connection               \\
+        \hline
+    \end{tabular}
+\end{table}
 
 The next field will take up 8 bytes, this will be big-endian ordered number which will say how many bytes of data to expect after for the header (an offset value).
 
@@ -21,6 +65,26 @@ The 4th field will be the metadata length which is the same as the header length
 The metadata field is the same as the header.
 
 An example of a SYN packet in both a structured view and a hex representation of the binary data is shown in Listing~\ref{lst:p1d-example-structure} and Listing~\ref{lst:p1d-example-binary}.
+
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}[caption={Prototype One Example Packet Structure},label=lst:p1d-example-structure]
+|-------------------|
+| 1                 | <- Packet Type
+| 5                 | <- Header Length
+| {id: 1, mtu: 470} | <- Protobuf Header (JSON representation)
+| 0                 | <- No Metadata
+| 0                 | <- No Payload
+|-------------------|
+\end{lstlisting}
+
+    \begin{lstlisting}[caption={Prototype One Example Packet Binary},label=lst:p1d-example-binary]
+ 1 0 0 0 0 0 0 0 5 8 1 16 214 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ ^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^ ^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
+ |        |             |              |               |
+Type    Header        Header        Metadata        Payload
+        Length                       Length         Length
+\end{lstlisting}
+\end{minipage}
 
 \subsubsection*{Operation}
 For a client to first connect to the server a simple handshake will occur. This has been based on the rsync protocol handshake which only requires one exchange at the start. The client will first send a packet type called "SYN" which includes the clients max receiving MTU size, this allows for the message size to be adjusted depending on the network structure. After the server has received it will acknowledge the handshake and send back it's own "SYN" packet, which will contain it's maximum supported receiving MTU and a generated client ID. This client ID will be stored at the server until the client disconnects, this will allow for a connection to remain available without the client needing to renegotiate. Because this ID will be used to determine which client is which, each message sent by the client will need this ID attached. Every message from the client following "SYN", must also increment a request ID field, which will allow error checking functionality.
