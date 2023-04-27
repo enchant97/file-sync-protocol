@@ -5,7 +5,17 @@ To solve this without sending and waiting for acknowledgments for each packet (r
 
 In prototype one during the end of a transfer only three request types were sent: request to send a file, the file data and a verify packet to check if any chunks were needed to be resent. In this prototype a new request type has been added for marking the end-of-file (EOF) and ending the file transfer. The request for verification will not end the transfer; instead it is repurposed for checking for missing chunks for the current group. This will reduce the complexity of needing the server to keep a record of the blocks.
 
-The existing protocol packet fields from prototype (headers and metadata) will stay the same. Both the client and server code will need to be altered to handle the new request type and at the client side keeping track of how many chunks are sent per block will need to be implemented.
+The existing protocol packet fields from prototype (headers and metadata) will stay the same. Both the client and server code will need to be altered to handle the new request type and at the client side keeping track of how many chunks are sent per block will need to be implemented. Figure~\ref{lst:p2d-offset-variables} shows the variables required for calculating blocks
+
+\begin{lstlisting}[caption={Prototype Two Offset Variables},label=lst:p2d-offset-variables,breaklines,numbers=left,language=go]
+var lastChunkID uint64 = 0
+var seekOffset int = 0
+
+chunkIDToOffset := make(map[uint64]int)
+
+eof := false
+missingChunks := make([]uint64, 0)
+\end{lstlisting}
 
 
 \subsection*{Testing}
