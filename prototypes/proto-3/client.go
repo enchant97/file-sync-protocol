@@ -133,9 +133,6 @@ func client(address string, mtu uint32, chunks_per_block uint, timeoutMS uint, f
 				}
 			}
 
-			// HACK server cannot keep up
-			//time.Sleep(time.Millisecond * 2)
-
 			// send REQ verify, receive ACK or REQ for resend
 			subRequestID++
 			messageToSend, _, _ = core.MakeMessage(
