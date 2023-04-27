@@ -1,0 +1,37 @@
+\subsection*{Solution Design}
+In prototype three which will be the last prototype, will improve on the required overhead for both the message size and required amount of processing.
+
+Firstly the metadata field has been removed, instead opting for using the packet type field to distinguish between different packets. This will remove the need to both serialize and deserialize the two fields, shown in Table~\ref{tab:p3d-packet-fields}.
+
+Secondly the reserved space used for the header length and payload length has been altered. Using a reserved 8 bytes is wasteful as a packet cannot be ~18446 Petabytes in size. Instead these length fields will use uint32, which only requires 4 bytes which will allow for a header or payload to be ~4 Gigabytes in size. By not reducing any further will allow future use with IPv6 Jumbo-Frames and Jumbograms which allow for greater packet sizes to be sent. % TODO: REF
+
+These changes will take the minimum packet size from 25 bytes to 9, which is a lot less network overhead, and allows for more file data to be sent in a single packet without loosing any functionality, shown in Listing~\ref{lst:p3d-example-structure} and Listing~\ref{lst:p3d-example-binary}.
+
+The next change is splitting packet types into two categories; one for requests and the other for responses. This allows the client to only need to accept responses and the sever to only accept requests, reducing the code complexity. These new packet types are shown in Table~\ref{tab:p3d-packet-types}.
+
+The last change is adding a new field to allow for requests that are related to a previous request to have a unique index. This index will allow the handling for out-of-order and old packets. This is to prevent requests such as "PSH\_VAL" and "PSH\_EOF" from triggering events multiple times, for example multiple validations may have be triggered before in prototype two due to the request ID's being the same, however the sub request ID can now be validated by the server and either handled or ignored.
+
+
+\subsection*{Testing}
+After running the first test several issues in the code were discovered and had to be fixed. These are listed below (with git commit hashes):
+
+\begin{itemize}
+    \item (814c3) Incomplete message sending (receive timeout method was broken)
+    \item (0e422) Server unable to detect old/past messages (fixed by checking if received id is less than current)
+    \item (00cee): ACK was incorrectly sent for every PSH-DAT received (fixed by removing send ack call)
+    \item (eb664): ACK message did not send real request id, fixed by actually sending the request id
+\end{itemize}
+
+Testing prototype three with a single file is shown to create a greater overhead than previous prototypes, now reaching "8.99\%". Despite reducing the field sizes and removing the metadata field, it has proved ineffective, due to the added error handling required to ensure the chunk blocks are received in the correct order. However despite the increase in overhead of bytes, the number of packets sent is still smaller than the existing solutions having only exchanged "46" packets. This is likely due having a reduced amount of acknowledge requests.
+
+In both the text and photos test the overall overhead has increased from previous prototypes, however when transferring text files it is still less than FTP and SMB2. As shown in the previous test data, this increase has likely been caused by the extra error checking.
+
+However in the synthetic test with 1KB files, the overall overhead has decreased from the previous prototype by "\~5\%". This shows that the overhead created by field size has helped decrease the amount of unnecessary reserved space taken from each packet. The amount of packets exchanged has stayed the same still being "3,504", this is due to the extra validation being able to fit in the same number of packets because of the previously mentioned reduction in reserved space.
+
+In this prototype, since optimising the code and removing the need for two serialization steps, the prototype is now almost the fastest in all tests. In the photos test it now is slightly faster than rsync; now reaching "1.1Gbps" in transfer speed. It is also greatly faster than rsync in the text test, performing "207.5Mbps" faster. It is also a similar transfer speed during the 1KB synthetic test, only being "1.2Mbps" slower than rsync (the fastest existing solution tested).
+
+During testing it was also discovered that the last message sent by the client always results in multiple (as many as five) resends being sent. The cause of this issue however was not found; but does not effect the running of the prototype.
+
+The testing of this prototype has found that when large transfers are made the overhead is greater, due to the extra error handling required because UDP has been used. This could likely be reduced in future prototypes by altering the way chunk headers are structured, for example every chunk could have a md4 hash made and each hash could be sent when a new block is started.
+
+As discussed in a previous prototype test, when transferring many small files where an individual file does not fill an entire packet a lot of overhead is created from each file needing a separate "handshake", if rsync's methodology of bundling multiple files in one packet was used; a much lower overhead could be seen, thus allowing better utilisation of the maximum transfer speed. On a higher latency network having less packets exchanged would also decrease the amount of wait time that is needed for every acknowledgement, allowing more time to be spent transferring actual file data.
