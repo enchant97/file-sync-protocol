@@ -16,6 +16,8 @@
 \usepackage{tabularx}
 \graphicspath{{./assets/}}
 \usepackage{wrapfig}
+% pdf
+\usepackage{pdfpages}
 % charts
 \usepackage{bchart}
 % href links
@@ -129,7 +131,8 @@ There are no ethical considerations.
 \appendix
 \chapter{Glossary}
 \printglossaries
-\chapter{Marking Scheme}
+\chapter{marking scheme}
+%\includepdf[pages={1},landscape=true,scale=0.9,fitpaper=true,pagecommand={\chapter{marking scheme}}]{assets/mark-scheme.pdf}
 \chapter{Changes to the Project Initiation Document}
 Not Applicable.
 \chapter{Current Environment Investigation Report}
