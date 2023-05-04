@@ -89,24 +89,42 @@ Type    Header        Header        Metadata        Payload
 \subsubsection*{Operation}
 For a client to first connect to the server a simple handshake will occur. This has been based on the rsync protocol handshake which only requires one exchange at the start. The client will first send a packet type called "SYN" which includes the clients max receiving MTU size, this allows for the message size to be adjusted depending on the network structure. After the server has received it will acknowledge the handshake and send back it's own "SYN" packet, which will contain it's maximum supported receiving MTU and a generated client ID. This client ID will be stored at the server until the client disconnects, this will allow for a connection to remain available without the client needing to renegotiate. Because this ID will be used to determine which client is which, each message sent by the client will need this ID attached. Every message from the client following "SYN", must also increment a request ID field, which will allow error checking functionality.
 
+\begin{itemize}
+    \item Client: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/client.go#LL29C1-L46C42}
+    \item Server: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/server.go#L70-L92}
+\end{itemize}
+
 Since UDP is used error handling for missing and out-of-order packets is needed and for the server to know when the client has received the response from the server. This is already a implemented feature in TCP, so this prototype will be based off how TCP works. Each request message sent from the client will expect a "ACK" packet which will contain the request ID in the header, so the client can handle out-of-order and missing messages. There will a timeout duration for waiting for a "ACK", after the timeout the original message will be sent again. This will repeat until a "ACK" is received.
 
 After a handshake, the client is free to send a request which in this prototype; will either be a request to send a file or ending the connection.
 
 To request to send a file; a packet type of "REQ" is sent with the destination file path and file size in the packets metadata field, including the size allows the server to decide whether there is enough space to receive the file and reserve it. The server will reply with an "ACK" and the client will send the file data in a streaming fashion, each packet will be a "PSH" type containing the chunk ID and the request ID. A chunk ID is needed to reconstruct the received data at the server side so it is in the correct order, this ID is simply a incrementing number. The "PSH" packets will not have "ACK" responses from the server, instead validation will happen after the transfer. This has been designed to reduce the latency during a transfer since most networks have little to no packet loss.
 
+\begin{itemize}
+    \item Client: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/client.go#L81-L100}
+    \item Server: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/server.go#L23-L52}
+\end{itemize}
+
 Once a transfer is finished the client will send a "REQ" packet containing the last chunk ID. The client will then either receive a "ACK" from the server if no chunks are missing, or a "REQ" packet containing the missing chunks; causing the client to send "PSH" packets containing the missing chunks. This will repeat until a "ACK" is received.
+
+
+\begin{itemize}
+    \item Client: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/client.go#L102-L142}
+    \item Server: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-1/server.go#L137-L187}
+\end{itemize}
 
 To end a connection, the client will send a "FIN" packet, this will include just the client ID. The server will recognise the request to end and clear the client ID and "ACK" the request.
 
 A sequence diagram example of a complete transfer is shown in Figure~\ref{fig:p1-sequence}.
 
+\newpage
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.8\linewidth]{p1-sequence.png}
+    \includegraphics[width=0.9\linewidth]{p1-sequence.png}
     \caption{Prototype One Sequence Diagram}
     \label{fig:p1-sequence}
 \end{figure}
+\newpage
 
 \subsection*{Testing}
 After the initial tests several issues in the code needed to be fixed. These are listed below (with git commit hashes):

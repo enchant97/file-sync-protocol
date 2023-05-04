@@ -14,6 +14,8 @@ To solve this without sending and waiting for acknowledgments for each packet (r
 
 In prototype one during the end of a transfer only three request types were sent: request to send a file, the file data and a verify packet to check if any chunks were needed to be resent. In this prototype a new request type has been added for marking the end-of-file (EOF) and ending the file transfer. The request for verification will not end the transfer; instead it is repurposed for checking for missing chunks for the current group. This will reduce the complexity of needing the server to keep a record of the blocks.
 
+Client: \url{https://github.com/enchant97/file-sync-protocol/blob/d0c709bd49d64598da03774df4ae5443802b8716/prototypes/proto-2b/client.go#L86-L177}
+
 The existing protocol packet fields from prototype (headers and metadata) will stay the same. Both the client and server code will need to be altered to handle the new request type and at the client side keeping track of how many chunks are sent per block will need to be implemented. Figure~\ref{lst:p2d-offset-variables} shows the variables required for calculating blocks
 
 \begin{lstlisting}[caption={Prototype Two Offset Variables},label=lst:p2d-offset-variables,breaklines,numbers=left,language=go]
